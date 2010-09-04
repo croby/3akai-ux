@@ -255,7 +255,7 @@ sakai.sitespages.site_admin = function(){
             elements : "elm1",
             theme: "advanced",
             // For a built-in list of plugins with doc: http://wiki.moxiecode.com/index.php/TinyMCE:Plugins
-            plugins: "embedresource,resourcelink,safari,advhr,inlinepopups,preview,noneditable,nonbreaking,xhtmlxtras,template",
+            plugins: "embedcontent,resourcelink,safari,advhr,inlinepopups,preview,noneditable,nonbreaking,xhtmlxtras,template",
 
             // Context Menu
             theme_advanced_buttons1: "formatselect,fontselect,fontsizeselect,bold,italic,underline,|,forecolor,backcolor,|,justifyleft,justifycenter,justifyright,justifyfull,|,bullist,numlist,|,outdent,indent,|,image,resourcelink",
