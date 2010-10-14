@@ -529,11 +529,11 @@ sakai.inbox = function() {
         if (!getAll) {
             for (var i = 0, k = response.results.length; i < k; i++) {
 
-                if (box === "inbox" && cats === "" && response.results[i]["sakai:category"] === "chat") {
-                    response.results.splice(i, 1);
+                //if (box === "inbox" && cats === "" && response.results[i]["sakai:category"] === "chat") {
+                //    response.results.splice(i, 1);
                     // We are modifying the array we are iterating. We need to adjust the length otherwise we end up with undefined array elements
-                    k--;
-                }
+                //    k--;
+                //}
             }
         } else {
             getAll = false;
@@ -833,6 +833,11 @@ sakai.inbox = function() {
             $("#inbox-sitejoin-already").hide();
 
             showPane(inboxPaneMessage);
+            // if reply form if visible reset reply form and hide it
+            if($(inboxSpecificMessageCompose).is(":visible")){
+                $(".compose-form")[0].reset();
+                $(inboxSpecificMessageCompose).hide();
+            }
             // Fill in this message values.
             $(inboxSpecificMessageSubject).text(sakai.api.Security.saneHTML(message["sakai:subject"]));
             var messageBody = ""+message["sakai:body"]; // coerce to string in case the body is all numbers

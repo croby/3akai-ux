@@ -89,6 +89,7 @@ sakai.chat = function(tuid, showSettings){
                     loadOnlineContactsTimer = setInterval(loadOnlineContacts, loadOnlineContactsInterval);
                     checkNewMessages();
                 }
+                $(window).trigger("sakai-chat-update");
             }
         });
     };
@@ -238,6 +239,21 @@ sakai.chat = function(tuid, showSettings){
         $(".chat_with_user").hide();
     };
     
+    /**
+     * Public method to return a contact
+     */
+    sakai.chat.getOnlineContact = function(userid){
+        return getOnlineContactObject(userid);
+    };
+
+    /**
+     * Public method to open contact list
+     */
+    sakai.chat.openContactsList = function(){
+        closeAllChatWindows();
+        toggleOnlineContactsList();
+    };
+
     /**
      * Open the chat window for a given user that already has a chat
      * window open
@@ -530,7 +546,11 @@ sakai.chat = function(tuid, showSettings){
             }
         }
     };
-    
+
+    var updateChatStatusMessage = function(chatStatusMessage){
+        $("#chat_mystatusmessage").html(chatStatusMessage);
+    };     
+
     ////////////////////////
     // Cookie Persistency //
     ////////////////////////
@@ -609,6 +629,10 @@ sakai.chat = function(tuid, showSettings){
         closeOnlineContactsList();
     });
     
+    $(window).bind("chat_status_message_change", function(event,newChatStatusMessage){
+        updateChatStatusMessage(newChatStatusMessage);   
+    });
+
     $(".user_chat").live("click", function(){
         var clicked = $(this).attr("id").substring(19);
         var active = $(this).hasClass("chat_online_button_visible");

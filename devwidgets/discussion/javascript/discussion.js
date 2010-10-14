@@ -534,10 +534,13 @@ sakai.discussion = function(tuid, showSettings){
         if (jsonPosts.posts[0]) {
         var firstPostSubject = jsonPosts.posts[0].post['sakai:subject'];
 
+        $('#discussion_compact_link', rootel).unbind('click');
         $('#discussion_compact_link', rootel).bind('click', jsonPosts, renderCompactPostsView);
 
+        $('#discussion_full_link', rootel).unbind('click');
         $('#discussion_full_link', rootel).bind('click', jsonPosts, renderFullPostsView);
 
+        $('#discussion_expand_link', rootel).unbind('click');
         $('#discussion_expand_link', rootel).bind('click', function(e, ui){
             $('#discussion_container', rootel).show();
 
@@ -556,7 +559,7 @@ sakai.discussion = function(tuid, showSettings){
             $('#discussion_collapse_link', rootel).show();
         });
 
-
+        $('#discussion_collapse_link', rootel).unbind('click');
         $('#discussion_collapse_link', rootel).bind('click', function(e, ui){
             $('#discussion_container', rootel).hide();
             $('#discussion_collapse_link', rootel).hide();
@@ -782,7 +785,9 @@ sakai.discussion = function(tuid, showSettings){
     var deletePost = function(id, deleteValue){
         var url = store + "/" + shardedId(id);
         var data = {
-            "sakai:deleted": deleteValue
+            "sakai:deleted": deleteValue,
+            "sakai:deletedByID": me.user.userid,
+            "sakai:deletedBy": sakai.api.User.getDisplayName(me.profile)
         };
         $.ajax({
             url: url,

@@ -233,7 +233,7 @@ sakai.entity = function(tuid, showSettings){
      * @param {Function} [callback] A callback function that gets fired after the request
      */
     var changeChatStatus = function(chatstatus){
-        sakai.data.me.profile = $.extend(true, sakai.data.me.profile, {"chatstatus": chatstatus});
+        sakai.data.me.profile = $.extend(true, {}, sakai.data.me.profile, {"chatstatus": chatstatus});
 
         var data = {
         	"chatstatus": chatstatus,
@@ -485,6 +485,10 @@ sakai.entity = function(tuid, showSettings){
             {
                 "url" : "/var/contacts/pending.json?page=0&items=100",
                 "method" : "GET"
+            },
+            {
+                "url" : sakai.config.URL.PRESENCE_CONTACTS_SERVICE,
+                "method" : "GET"
             }
         ];
         $.ajax({
@@ -494,6 +498,33 @@ sakai.entity = function(tuid, showSettings){
                 "requests": $.toJSON(reqs)
             },
             success: function(data){
+                var presence = $.parseJSON(data.results[3].body);
+                for (var l in presence.contacts){
+                    if (presence.contacts[l].user === userid){
+                        if (presence.contacts[l].profile.chatstatus) {
+                            entityconfig.data.profile.chatstatus = presence.contacts[l].profile.chatstatus;
+                        } else {
+                            entityconfig.data.profile.chatstatus = "offline";
+                        }
+                        $("#entity_contact_" + entityconfig.data.profile.chatstatus).show();
+
+                        // Add binding to chat status updates for the contact
+                        $(window).bind("sakai-chat-update", function(e){
+                            var contactProfile = sakai.chat.getOnlineContact(userid).profile;
+                            if (contactProfile && contactProfile.chatstatus) {
+                                if (entityconfig.data.profile.chatstatus !== contactProfile.chatstatus) {
+                                    $("#entity_contact_" + entityconfig.data.profile.chatstatus).hide();
+                                    entityconfig.data.profile.chatstatus = contactProfile.chatstatus;
+                                    $("#entity_contact_" + entityconfig.data.profile.chatstatus).show();
+                                }
+                            } else {
+                                $("#entity_contact_" + entityconfig.data.profile.chatstatus).hide();
+                                entityconfig.data.profile.chatstatus = "offline";
+                                $("#entity_contact_" + entityconfig.data.profile.chatstatus).show();
+                            }
+                        });
+                    }
+                }
                 var contacts = $.parseJSON(data.results[0].body);
                 for (var i in contacts.results){
                     if (contacts.results[i].target === userid){
@@ -586,6 +617,7 @@ sakai.entity = function(tuid, showSettings){
         });
 
         // Add the submit event to the status form
+        $entity_profile_status.unbind("submit");
         $entity_profile_status.bind("submit", function(){
 
             // Get the correct input value from the user
@@ -594,23 +626,20 @@ sakai.entity = function(tuid, showSettings){
             // Escape html
             inputValue = sakai.api.Security.escapeHTML(inputValue);
 
-            if (profile_status_value !== inputValue) {
+            if (!profile_status_value || profile_status_value !== inputValue) {
                 profile_status_value = inputValue;
-
-                sakai.data.me.profile = $.extend(true, sakai.data.me.profile, {"status": inputValue});
 
                 if (sakai.data.me.profile.activity)
                     delete sakai.data.me.profile.activity;
 
-                if (sakai.data.me.profile["rep:policy"])
-                    delete sakai.data.me.profile["rep:policy"];
+                var profileData = $.extend(true, {}, sakai.data.me.profile, {"status": inputValue});
+
+                sakai.api.Server.filterJCRProperties(profileData);
 
                 var originalText = $("button span", $entity_profile_status).text();
                 $("button span", $entity_profile_status).text(sakai.api.Security.saneHTML($entity_profile_status_input_saving.text()));
 
-                //trigger chat_status_message_change to update the status message on chat widget.
-                $(window).trigger("chat_status_message_change", inputValue);
-                sakai.api.Server.saveJSON(authprofileURL, sakai.data.me.profile, function(success, data) {
+                sakai.api.Server.saveJSON(authprofileURL, profileData, function(success, data) {
                     if (success) {
                         // Set the button back to it's original text
                         $("button span", $entity_profile_status).text(sakai.api.Security.saneHTML(originalText));
@@ -622,6 +651,12 @@ sakai.entity = function(tuid, showSettings){
                         var activityData = {
                             "sakai:activityMessage": activityMsg
                         };
+
+                        sakai.data.me.profile = $.extend(true, sakai.data.me.profile, {"status": inputValue});
+
+                        //trigger chat_status_message_change to update the status message on chat widget.
+                        $(window).trigger("chat_status_message_change", inputValue);
+
                         sakai.api.Activity.createActivity(nodeUrl, "status", "default", activityData);
                     } else {
                         // Log an error message
@@ -661,7 +696,7 @@ sakai.entity = function(tuid, showSettings){
             showHideListLinkMenu(tagsLinkMenu, tagsLink, false);
         });
     };
-    
+
     // Add the click listener to the document
  	$(document).click(function(e){
  	    var $clicked = $(e.target);
@@ -801,7 +836,7 @@ sakai.entity = function(tuid, showSettings){
 
             // Add binding to available to chat link
             $('#entity_available_to_chat').live("click", function() {
-                // todo
+                sakai.chat.openContactsList();
             });
 
             $("#entity_contact_invited").live("click", function(){
@@ -843,7 +878,7 @@ sakai.entity = function(tuid, showSettings){
         authprofileURL = "/~" + entityconfig.data.profile["rep:userId"] + "/public/authprofile";
 
         if (!entityconfig.data.profile.chatstatus) {
-            entityconfig.data.profile.chatstatus = "online";
+            entityconfig.data.profile.chatstatus = "offline";
         }
 
     };
@@ -862,6 +897,11 @@ sakai.entity = function(tuid, showSettings){
         if (sakai.api.UI.changepic){
             sakai.api.UI.changepic["mode"] = "group";
             sakai.api.UI.changepic["id"] = entityconfig.data.profile["sakai:group-id"];
+        } else {
+            $(window).bind("sakai-changepic-ready", function(e){
+                sakai.api.UI.changepic["mode"] = "group";
+                sakai.api.UI.changepic["id"] = entityconfig.data.profile["sakai:group-id"];
+            });
         }
 
     };
