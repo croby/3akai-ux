@@ -191,7 +191,6 @@ var testWidgetURLs = function() {
             var subproperties = getWidgetProperties(theWidget);
             if (subproperties.length > 0) {
                 (function(widgetName, subprops) {
-                    stop();
                     asyncTest(widgetName, subprops.length, function() {
                          testAllProperties(subprops, widgetName, function() {
                              start();
