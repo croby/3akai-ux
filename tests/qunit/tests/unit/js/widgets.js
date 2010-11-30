@@ -173,13 +173,13 @@ var testAllProperties = function(subproperties, widgetName, callback) {
                 url: propertyURL,
                 async: false,
                 complete: function(xhr, status) {
-                    ok(status === "success", propertyURL + " on the " + propertyName + " on the " );
+                    ok(status === "success", propertyURL + " on the " + propertyName);
                     if (last) {
                         callback();
                     }
                 }
             });
-        })(subproperties[l].url, subproperties[l].name, subproperties.length-1 === l);
+        })(subproperties[l].url, subproperties[l].name, m-1 === l);
     }
 };
 
