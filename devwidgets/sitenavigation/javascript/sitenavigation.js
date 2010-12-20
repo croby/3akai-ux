@@ -26,7 +26,7 @@ var sakai = sakai || {};
  * @description
  * Contains the functionality for sites
  */
-sakai.sitespages = sakai.sitespages || {};
+sakai.sites = sakai.sites || {};
 
 /**
  * @name sakai.sitespages.navigation
@@ -34,21 +34,21 @@ sakai.sitespages = sakai.sitespages || {};
  * @description
  * Contains public functions for the navigation widget
  */
-sakai.sitespages.navigation = sakai.sitespages.navigation || {};
+sakai.sitenavigation = sakai.sitenavigation || {};
 
 /**
- * @name sakai.navigation
+ * @name sakai.sitenavigation
  *
- * @class navigation
+ * @class sitenavigation
  *
  * @description
- * Initialize the navigation widget
+ * Initialize the sitenavigation widget
  *
  * @version 0.0.1
  * @param {String} tuid Unique id of the widget
  * @param {Boolean} showSettings Show the settings of the widget or not
  */
-sakai.navigation = function(tuid, showSettings){
+sakai.sitenavigation = function(tuid, showSettings){
 
     /////////////////////////////
     // Configuration variables //
@@ -744,7 +744,7 @@ sakai.navigation = function(tuid, showSettings){
      *   load of the navigation tree. If null, a default page is selected.
      * @param {Object} site_info_object Contains an array with all the pages, each page is an object.
      */
-    sakai.sitespages.navigation.renderNavigation = function(selectedPageUrlName, site_info_object) {
+    sakai.sitenavigation.renderNavigation = function(selectedPageUrlName, site_info_object) {
         // check arguments
         if(!site_info_object || site_info_object.length === 0) {
             renderNoPages(true);
@@ -776,7 +776,7 @@ sakai.navigation = function(tuid, showSettings){
         }
     };
 
-    sakai.sitespages.navigation.addNode = function(nodeID, nodeTitle, nodePosition) {
+    sakai.sitenavigation.addNode = function(nodeID, nodeTitle, nodePosition) {
         if (nodeID && nodeTitle && nodePosition) {
             var newNode = {
                 "children": [],
@@ -803,7 +803,7 @@ sakai.navigation = function(tuid, showSettings){
         }
     };
 
-    sakai.sitespages.navigation.deleteNode = function(nodeID) {
+    sakai.sitenavigation.deleteNode = function(nodeID) {
         if (!$.bbq.getState("page")) {
             $pageCount.html("(" + sakai.sitespages.site_info.number_of_pages() + ")");
             var navigationData = convertToHierarchy(fullURLs(sakai.sitespages.site_info._pages));
@@ -811,7 +811,7 @@ sakai.navigation = function(tuid, showSettings){
 
             // determine which page to initially select
             var initiallySelect = navigationData[0].attr.id.toString().replace("nav_", "");
-            sakai.sitespages.navigation.selectNode(initiallySelect);
+            sakai.sitenavigation.selectNode(initiallySelect);
         }
         if (nodeID) {
             var $nodeToDelete = $navigationTree.find("#nav_" + nodeID);
@@ -822,37 +822,242 @@ sakai.navigation = function(tuid, showSettings){
         }
     };
 
-    sakai.sitespages.navigation.renameNode = function(nodeID, newLabel) {
+    sakai.sitenavigation.renameNode = function(nodeID, newLabel) {
         if (nodeID && newLabel) {
             var $nodeToRename = $navigationTree.find("#nav_" + nodeID);
             $navigationTree.jstree("rename_node", $nodeToRename, newLabel);
         }
     };
 
-    sakai.sitespages.navigation.selectNode = function(nodeID) {
+    sakai.sitenavigation.selectNode = function(nodeID) {
         if (nodeID) {
             var $nodeToSelect = $navigationTree.find("#nav_" + nodeID);
             $navigationTree.jstree("select_node", $nodeToSelect);
         }
     };
 
-    sakai.sitespages.navigation.deselectCurrentNode = function() {
+    sakai.sitenavigation.deselectCurrentNode = function() {
         $navigationTree.jstree("deselect_node", $navigationTree.jstree("get_selected"));
     };
 
 
+// NEW CODE
+    /**
+     * Open page H
+     * @param {String} pageid
+     * @return void
+     */
+    sakai.sitespages.openPageH = function(pageUrlName){
+
+        // Vars
+        var pageType = false;
+
+        // Reset version history, but only if version version history has been opened
+        if (sakai.sitespages.versionHistoryNeedsReset) {
+            sakai.sitespages.resetVersionHistory();
+            sakai.sitespages.versionHistoryNeedsReset = false;
+        }
+
+        // Reset flags
+        sakai.sitespages.inEditView = false;
+
+
+        // If no pageUrlName is supplied, default to the about page
+        if (!pageUrlName) {
+            pageUrlName = determineLowestPositionPage();
+        }
+
+        // Store currently selected page
+        sakai.sitespages.selectedpage = pageUrlName;
+
+        /* Full Width handling
+         * Taken out for now, put back in once we have a design and implementation of a full width pages widget
+        if (sakai.sitespages.site_info._pages[sakai.sitespages.selectedpage] && sakai.sitespages.site_info._pages[sakai.sitespages.selectedpage].fullwidth){
+            $(".content_container").addClass("sitepages_fullwidth");
+            $("#page_nav_content").hide();
+            $("#more_make_full_width").hide();
+            $("#more_make_two_column").show();
+        } else {
+            $(".content_container").removeClass("sitepages_fullwidth");
+            $("#page_nav_content").show();
+            $("#more_make_full_width").show();
+            $("#more_make_two_column").hide();
+        }
+        */
+
+        if (sakai.sitespages.site_info._pages[pageUrlName] !== undefined) {
+          // Get page type
+          pageType = sakai.sitespages.site_info._pages[pageUrlName]["pageType"];
+
+          // Set page title
+          $pagetitle.html(sakai.api.Security.saneHTML(sakai.sitespages.site_info._pages[pageUrlName]["pageTitle"]));
+        }
+
+        // UI setup
+        $webpage_edit.hide();
+        $tool_edit.hide();
+        $insert_more_menu.hide();
+        $more_menu.hide();
+        $sidebar_content_pages.show();
+        $main_content_div.children().css("display","none");
+
+        if ($("#main-content-div #" + sakai.sitespages.selectedpage).length > 0) {
+
+            // If page has been opened
+
+            // Show page
+            $("#" + sakai.sitespages.selectedpage).show();
+        }
+        else {
+
+            // If page has not been opened
+
+            // Show 404 error if page type can not be determined, else store page type
+            if (pageType === false) {
+                $("#error_404").show();
+            } else {
+                sakai.sitespages.pagetypes[sakai.sitespages.selectedpage] = pageType;
+            }
+            if (sakai.sitespages.site_info._pages[pageUrlName]) {
+                $.ajax({
+                    url: sakai.sitespages.site_info._pages[pageUrlName]["jcr:path"] + "/pageContent.infinity.json",
+                    type: "GET",
+                    cache: false,
+                    success: function(data) {
+
+                        sakai.sitespages.pagecontents[pageUrlName] = data;
+
+                        // TO DO: See if we need to run the content through sakai.site.ensureProperWidgetIDs - would be good if we could skip this step and make sure widget IDs are correct from the beginning
+                        var pagecontent = sakai.sitespages.pagecontents[pageUrlName]["sakai:pagecontent"] || "";
+                        displayPage(pagecontent, true);
+
+                     },
+                     error: function(xhr, status, e) {
+                        debug.error("site.js: Could not load page content for webpage!");
+                     }
+                });
+            } else {
+                $.bbq.removeState("page");
+            }
+        }
+
+        if (!config.editMode) {
+            $content_page_options.hide();
+            $(".sakai_site .content_top").addClass("content_top_rounded");
+        } else {
+            $("#sitespages_page_options #page_save_options").hide();
+            $("#sitespages_page_options #page_options").show().html($.TemplateRenderer("#sitespages_page_options_container", {})); // todo don't do this
+            $more_revision_history = $($more_revision_history.selector);
+            $more_save_as_template = $($more_save_as_template.selector);
+            if (pageType === "webpage") {
+                $(".sakai_site .content_top").removeClass("content_top_rounded");
+                $content_page_options.show();
+                $li_edit_page_divider.show();
+                $sitespages_page_options.show();
+                $more_revision_history.show();
+                $more_change_layout.hide();
+                $more_save_as_template.show();
+                $more_change_layout.hide();
+            } else if (pageType === "dashboard") {
+                $(".sakai_site .content_top").removeClass("content_top_rounded");
+                $sitespages_page_options.show();
+                $more_revision_history.hide();
+                $content_page_options.show();
+                $li_edit_page_divider.show();
+                $more_save_as_template.hide();
+                $more_change_layout.show();
+            } else if (pageType === "profile") {
+                $(".sakai_site .content_top").addClass("content_top_rounded");
+                $sitespages_page_options.hide();
+                $content_page_options.hide();
+                $li_edit_page_divider.hide();
+            }
+        }
+
+    };
+    
+
+    /**
+     * Opens a page
+     * @param {String} pageid
+     * @return void
+     */
+    sakai.sitespages.openPage = function(pageid){
+
+        // If page is not the current page load it
+        if (sakai.sitespages.selectedpage !== pageid) {
+            sakai.sitespages.selectedpage = pageid;
+            History.addBEvent(pageid);
+        }
+
+    };
     ///////////////////////
     // Initial functions //
     ///////////////////////
 
     // Render navigation when navigation widget is loaded
     if (sakai.sitespages.isReady) {
-        sakai.sitespages.navigation.renderNavigation(sakai.sitespages.selectedpage, sakai.sitespages.site_info._pages);
+        sakai.sitenavigation.renderNavigation(sakai.sitespages.selectedpage, sakai.sitespages.site_info._pages);
     } else {
         $(window).bind("sakai-sitespages-ready", function() {
-            sakai.sitespages.navigation.renderNavigation(sakai.sitespages.selectedpage, sakai.sitespages.site_info._pages);
+            sakai.sitenavigation.renderNavigation(sakai.sitespages.selectedpage, sakai.sitespages.site_info._pages);
         });
     }
+
+    /**
+     * Shows the selected page in view mode
+     */
+    var viewSelectedPage = function () {
+        // show newly updated title and content
+        var pagecontent = sakai.sitespages.pagecontents[sakai.sitespages.selectedpage]["sakai:pagecontent"] || "";
+        $("#" + sakai.sitespages.selectedpage).html(sakai.api.Security.saneHTML(pagecontent));
+        $("#" + sakai.sitespages.selectedpage).show();
+        if (sakai.sitespages.site_info._pages[sakai.sitespages.selectedpage]["pageType"] === "webpage") {
+            $("#webpage_edit").show();
+        }
+        $("#pagetitle").html(sakai.api.Security.saneHTML(sakai.sitespages.site_info._pages[sakai.sitespages.selectedpage]["pageTitle"]));
+
+        // load any widgets that may be on this page
+        sakai.api.Widgets.widgetLoader.insertWidgets(sakai.sitespages.selectedpage,null,sakai.sitespages.config.basepath + "_widgets/");
+
+        // switch back to view mode
+        $("#edit_view_container").hide();
+        $("#show_view_container").show();
+
+        // update the URL
+        History.addBEvent(sakai.sitespages.selectedpage);
+    };
+
+    var saveEdit_Navigation = function() {
+
+        // Navigation
+        sakai.sitespages.pagecontents._navigation = getContent();
+        $("#page_nav_content").html(sakai.sitespages.pagecontents._navigation);
+
+        document.getElementById(sakai.sitespages.selectedpage).style.display = "block";
+
+        $("#edit_view_container").hide();
+        $("#show_view_container").show();
+
+        sakai.api.Widgets.widgetLoader.insertWidgets("page_nav_content",null,sakai.sitespages.config.basepath + "_widgets/");
+
+        var jsontosave = {};
+        jsontosave["sakai:pagenavigationcontent"] = sakai.sitespages.pagecontents._navigation;
+
+        sakai.api.Server.saveJSON(sakai.sitespages.urls.SITE_NAVIGATION(), jsontosave);
+
+        document.getElementById(sakai.sitespages.selectedpage).style.display = "block";
+        sakai.api.Widgets.widgetLoader.insertWidgets(sakai.sitespages.selectedpage, null, sakai.sitespages.config.basepath + "_widgets/");
+
+        // Create an activity item for the page edit
+        /*
+        var nodeUrl = sakai.sitespages.site_info._pages[sakai.sitespages.selectedpage]["jcr:path"];
+        var activityData = {
+            "sakai:activityMessage": "The navigationbar of page <a href=\"/sites/"+sakai.sitespages.currentsite.id + "#" + sakai.sitespages.selectedpage + "\">" + sakai.sitespages.site_info._pages[sakai.sitespages.selectedpage].pageTitle + "</a> in site \"" + sakai.sitespages.currentsite.name + "\" has been updated"
+        }
+        sakai.api.Activity.createActivity(nodeUrl, "site", "default", activityData); */
+
+    };
 
 };
 
