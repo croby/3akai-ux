@@ -330,6 +330,60 @@ sakai.site = function(tuid,showSettings){
         return highest;
     };
 
+    var SITE_DATA_SERVICE = "/var/services/gimmeSiteData.json";
+    var uuid = "",
+        siteData = {};
+
+
+    var getSiteData = function() {
+        // sakai.api.Server.getJSON("");
+
+        // call setupPages
+    };
+
+    /**
+     * Set up the pages from the site object
+     */
+    var setupPages = function() {
+        // instantiate each page widget in the DOM
+
+        // run insertWidgets
+    };
+
+    /**
+     * create a new page on this site
+     */
+    var createNewPage = function() {
+        // create a new DOM element with a page widget in it
+        // probably from a template
+
+        // add the page to the site object
+
+        // save the site object
+
+        // tell navigation to show the page
+    };
+
+    var setupNavigation = function(siteObject) {
+        // pass the object to the site navigation widget to render
+        // site navigation might also need the tuid of the site
+    };
+
+    var removePageFromSite = function(page) {
+        // remove page from the site data object
+
+        // post the site data object back to the server
+
+        // Maybe the server can handle this?
+    };
+
+    var bindSiteEvents = function() {
+        $(window).bind("sakai.site.load." + tuid, function(e, _uuid) {
+            uuid = _uuid;
+            getSiteData();
+        });
+    };
+
     /**
      * Will initiate a request to the site service.
      */
@@ -338,6 +392,7 @@ sakai.site = function(tuid,showSettings){
         }
         else {
         }
+        bindSiteEvents();
         $(window).trigger("sakai.site.ready");
         sakai.site.isReady = true;
     };
