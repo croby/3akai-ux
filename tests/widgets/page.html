@@ -65,7 +65,7 @@
         <script type="text/javascript" src="/dev/lib/jquery/plugins/jquery.jeditable.js"></script>
         <script type="text/javascript" src="/dev/lib/jquery/plugins/jquery.validate.sakai-edited.js"></script>
         <script type="text/javascript" src="/dev/lib/jquery/plugins/imgareaselect/jquery.imgareaselect.js"></script>
-
+        <script src="/tests/qunit/js/jquery.mockjax.js"></script>
     </head>
 
     <body class="fl-centered profile_preview i18nable">
@@ -89,5 +89,20 @@
 
         <!-- FOOTER WIDGET -->
         <div id="widget_footer" class="widget_inline footercontainer"></div>
+
+        <script>
+            $.mockjax({
+                url: "/var/services/getPageData.json",
+                response: function(settings) {
+                    this.responseText = {
+                        "sling:resourceType":"sakai/page",
+                        "jcr:uuid": "page-uuid",
+                        "sakai:pageContent": "<p>html <i>string</i> of page content</p>",
+                        "sakai:pageTitle": "Page Title",
+                        "sakai:pageDescription": "Page Description"
+                    };
+                }
+            });
+        </script>
     </body>
 </html>
