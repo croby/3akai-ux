@@ -1,15 +1,13 @@
 {
-    "description": "Navigate all the pages contained within this group or site",
+    "description": "Navigate all the pages contained within this site",
     "hasSettings": true,
     "i18n": {
-        "default": "/devwidgets/navigation/bundles/default.properties"
+        "default": "/devwidgets/sitenavigation/bundles/default.properties"
     },
     "id": "navigation",
-    "img": "/devwidgets/navigation/images/icon.png",
+    "img": "/devwidgets/sitenavigation/images/icon.png",
     "name": "Pages",
-    "showinsidebar": true,
-    "showinsakaigoodies": true,
     "type":"core",
     "enabled":true,
-    "url": "/devwidgets/navigation/navigation.html"
+    "url": "/devwidgets/sitenavigation/sitenavigation.html"
 }
