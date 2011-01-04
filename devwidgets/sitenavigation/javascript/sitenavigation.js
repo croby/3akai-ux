@@ -37,8 +37,12 @@ sakai.sitenavigation = function(tuid, showSettings){
 
     var navigationData = {},
         siteData = {},
+        siteDataFlattened = {}, // UUID-indexed
         canEdit = true,
-        currentPage = false;
+        currentPage = false,
+        currentEntity = false,
+        currentEntityType = false,
+        pagesVisibility = false;
 
     var $rootel = $("#" + tuid),
         $sitenavigation_main = $("#sitenavigation_main", $rootel),
@@ -48,7 +52,10 @@ sakai.sitenavigation = function(tuid, showSettings){
         $sitenavigation_footer_noedit = $("#sitenavigation_footer_noedit", $rootel),
         $sitenavigation_header = $("#sitenavigation_header", $rootel),
         $sitenavigation_settings_icon = $("#sitenavigation_settings_icon", $rootel),
-        $sitenavigation_tree = $("#sitenavigation_tree", $rootel);
+        $sitenavigation_tree = $("#sitenavigation_tree", $rootel),
+        $widget_settings_menu = $("#widget_settings_menu", $rootel),
+        $sitenavigation_settings_form = $("#sitenavigation_settings_form", $rootel),
+        $sitenavigation_pages_visibility = $("#sitenavigation_pages_visibility", $rootel);
 
     /**
      * Create a node for JSTree to use
@@ -57,10 +64,14 @@ sakai.sitenavigation = function(tuid, showSettings){
      * @return {Object} The JSTree formatted data object
      */
     var createJSTreeNode = function(siteDataNode) {
-        return ret = {
+        var ret = {
             data: siteDataNode["sakai:pageTitle"],
             attr: { id: "nav_" + siteData["jcr:uuid"] + "_" + siteDataNode["jcr:uuid"] }
         };
+        if (siteDataNode.hasOwnProperty("sakai:deletable")) {
+            ret.attr["class"] = "deletable_" + siteDataNode["sakai:deletable"];
+        }
+        return ret;
     };
 
     /**
@@ -75,6 +86,7 @@ sakai.sitenavigation = function(tuid, showSettings){
         var ret = [];
         for (var i = 0, j=root.length; i<j; i++) {
             var thisNode = createJSTreeNode(root[i]);
+            siteDataFlattened[root[i]["jcr:uuid"]] = root[i];
             if (root[i].hasOwnProperty("children") && root[i].children.length) {   
                 thisNode.children = [];
                 thisNode.state = "closed";
@@ -95,10 +107,23 @@ sakai.sitenavigation = function(tuid, showSettings){
      * @return {Object} The site node
      */
     var createSiteNode = function(navTreeNode) {
-        return ret = {
-            "jcr:uuid": navTreeNode.attr.id,
+        var ret = {
+            "jcr:uuid": navTreeNode.attr.id.split("nav_" + siteData["jcr:uuid"] + "_")[1],
             "sakai:pageTitle": navTreeNode.data
         };
+        /* 
+         * the class attribute is a set of space-delimited sakai:- prefixed properties
+         * An example value would be "deletable_false" which translates to
+         * sakai:deletable = false
+         */
+        if (navTreeNode.attr["class"]) {
+            var classes = navTreeNode.attr["class"].split(" ");
+            for (var i=0, j=classes.length; i<j; i++) {
+                var classSplit = classes[i].split("_");
+                ret["sakai:" + classSplit[0]] = classSplit[1];
+            }
+        }
+        return ret;
     };
 
     /**
@@ -112,6 +137,7 @@ sakai.sitenavigation = function(tuid, showSettings){
         for (var i = 0, j=root.length; i<j; i++) {
             var thisNode = createSiteNode(root[i]);
             thisNode["sakai:pagePosition"] = i;
+            siteDataFlattened[thisNode["jcr:uuid"]] = thisNode;
             if (root[i].hasOwnProperty("children") && root[i].children.length) {   
                 thisNode.children = [];
                 var children = createSiteDataFromNavTreeData(root[i].children);
@@ -133,9 +159,9 @@ sakai.sitenavigation = function(tuid, showSettings){
             [ "themes", "json_data", "ui", "cookies", "dnd" ] :
             [ "themes", "json_data", "ui", "cookies" ];
 
+        siteDataFlattened = {};
         navigationData = createNavTreeDataFromSiteData(siteData.pages);
-        debug.log("currentPage", currentPage);
-        
+        debug.log("initially selecting", currentPage);
         $sitenavigation_tree.jstree({
             "core": {
                 "animation": 0,
@@ -167,7 +193,11 @@ sakai.sitenavigation = function(tuid, showSettings){
         // Selection
         $sitenavigation_tree.bind("select_node.jstree", function(e, data) {
             var pageID = $(data.rslt.obj[0]).attr("id").split("nav_")[1];
-            $.bbq.pushState({"page": pageID});
+            debug.log(pageID);
+            if (pageID !== currentPage) {
+                debug.log("pageID !== currentPage");
+                $.bbq.pushState({"page": pageID});
+            }
         });
 
         // Moving
@@ -178,16 +208,25 @@ sakai.sitenavigation = function(tuid, showSettings){
     };
 
     var refreshData = function() {
-        navigationData = $sitenavigation_tree.jstree("get_json");
-        debug.log($sitenavigation_tree.jstree("get_json"));
-        siteData = createSiteDataFromNavTreeData(navigationData);
+        navigationData = $sitenavigation_tree.jstree("get_json", -1);
+        siteDataFlattened = {};
+        siteData.pages = createSiteDataFromNavTreeData(navigationData);
     };
 
     var deletePage = function() {
-        debug.debug($sitenavigation_tree.jstree("get_selected"));
-        $sitenavigation_tree.jstree("delete_node", $sitenavigation_tree.jstree("get_selected"));
-        refreshData();
-        $.bbq.pushState({"page":navigationData[0].attr.id});
+        var nodeToDelete = $sitenavigation_tree.jstree("get_selected");
+        var nodeUUID = $(nodeToDelete).attr("id");
+        nodeUUID = nodeUUID.split("nav_" + siteData["jcr:uuid"] + "_")[1];
+        var siteDataNode = siteDataFlattened[nodeUUID];
+        if (!siteDataNode.hasOwnProperty("sakai:deletable") || siteDataNode["sakai:deletable"] === "true") {
+            $sitenavigation_tree.jstree("delete_node", $sitenavigation_tree.jstree("get_selected"));
+            refreshData();
+            if (navigationData[0]) {
+                $.bbq.pushState({"page":navigationData[0].attr.id.split("nav_")[1]});
+            } else {
+                $.bbq.removeState("page");
+            }
+        }
     };
 
     var addPage = function(pageObj) {
@@ -201,12 +240,32 @@ sakai.sitenavigation = function(tuid, showSettings){
 
     // handle history change
     var parseState = function(callback) {
-        if ($.bbq.getState("page") && $.bbq.getState("page") !== currentPage) {
-            currentPage = $.bbq.getState("page");
-            $(".page", "#" + siteData["jcr:uuid"]).hide(); // rootel of the site
-            $("#" + $.bbq.getState("page")).show();
+        var pageState = $.bbq.getState("page");
+        if (pageState && pageState !== currentPage) {
             $(window).trigger("sakai.sitenavigation." + tuid + ".newState");
+            var $selected = $sitenavigation_tree.jstree("get_selected");
+            var $nodeToSelect = $sitenavigation_tree.find("#nav_" + pageState);
+            debug.log($selected, $nodeToSelect);
+            // ensure the node is valid and that we're not selecting an already-selected node
+            if ($nodeToSelect.length && $selected.attr("id") !== $nodeToSelect.attr("id")) {
+                debug.log("selecting");
+                currentPage = pageState;
+                $(".page", "#" + siteData["jcr:uuid"]).hide(); // rootel of the site
+                $("#" + pageState).show();
+                $sitenavigation_tree.jstree("deselect_node", $selected);
+                $sitenavigation_tree.jstree("select_node", $nodeToSelect);
+                debug.log("after selection, selected", $sitenavigation_tree.jstree("get_selected"));
+            } else if (siteData && siteData.pages && $selected.attr("id") !== $nodeToSelect.attr("id")) {
+                debug.log("no node to select", $nodeToSelect);
+                $.bbq.pushState({"page": siteData["jcr:uuid"] + "_" + siteData.pages[0]["jcr:uuid"]});
+            } else if ($selected.attr("id") === $nodeToSelect.attr("id")) {
+                debug.log("equal, just hiding/showing");
+                currentPage = pageState;
+                $(".page", "#" + siteData["jcr:uuid"]).hide();
+                $("#" + pageState).show();
+            }
         } else if (!currentPage && siteData && siteData.pages) {
+            debug.log("pushing the first page");
             $.bbq.pushState({"page": siteData["jcr:uuid"] + "_" + siteData.pages[0]["jcr:uuid"]});
         }
     };
@@ -224,7 +283,9 @@ sakai.sitenavigation = function(tuid, showSettings){
                 $sitenavigation_settings_icon.show();
             });
             $sitenavigation_header.bind("mouseleave", function () {
-                $sitenavigation_settings_icon.hide();
+                if (!$widget_settings_menu.is(":visible")) {
+                    $sitenavigation_settings_icon.hide();
+                }
             });
             $sitenavigation_footer_noedit.hide();
             $sitenavigation_footer_edit.show();
@@ -234,6 +295,27 @@ sakai.sitenavigation = function(tuid, showSettings){
         }
     };
 
+    var savePermissions = function() {
+        var selectedValue = $($sitenavigation_pages_visibility.selector).val();
+
+        // only update if value has changed
+        if(selectedValue !== pagesVisibility) {
+            $.ajax({
+                url: "/system/userManager/" + currentEntityType + "/" + currentEntity + ".update.html",
+                type: "POST",
+                data: {
+                    "sakai:pages-visible": selectedValue
+                },
+                error: function(xhr, textStatus, thrownError) {
+                    debug.error("sitenavigation.js settings update: " + xhr.status + " " + xhr.statusText);
+                },
+                complete: function() {
+                    toggleSettings(false);
+                }
+            });
+        }
+
+    };
 
     /**
      * Toggle the widget settings
@@ -244,6 +326,7 @@ sakai.sitenavigation = function(tuid, showSettings){
         if (show) {
             $sitenavigation_main.hide();
             $sitenavigation_settings.show();
+            $.TemplateRenderer($sitenavigation_settings_template, {"visible": pagesVisibility, "entity": currentEntity}, $sitenavigation_settings);
         } else {
             $sitenavigation_main.show();
             $sitenavigation_settings.hide();
@@ -278,9 +361,55 @@ sakai.sitenavigation = function(tuid, showSettings){
         $(window).bind("sakai.sitenavigation." + tuid + ".addPage", function(e, pageObj) {
             addPage(pageObj);
         });
+
+        $sitenavigation_settings_icon.die("click");
+        $sitenavigation_settings_icon.live("click", function() {
+            if($widget_settings_menu.is(":visible")) {
+                $widget_settings_menu.hide();
+            } else {
+                var x = $sitenavigation_settings_icon.position().left;
+                var y = $sitenavigation_settings_icon.position().top;
+                $widget_settings_menu.css(
+                    {
+                      "top": y + 12 + "px",
+                      "left": x + 4 + "px"
+                    }
+                ).show();
+            }
+        });
+
+        $widget_settings_menu.die("click");
+        $widget_settings_menu.live("click", function() {
+            toggleSettings(true);
+            $sitenavigation_settings_icon.hide();
+            $widget_settings_menu.hide();
+        });
+
+        $sitenavigation_settings_form.die("submit");
+        $sitenavigation_settings_form.live("submit", function() {
+            savePermissions();
+            return false;
+        });
+    };
+
+    var setPermissions = function() {
+        if (!sakai.currentgroup || ($.isEmptyObject(sakai.currentgroup) && $.isEmptyObject(sakai.currentgroup.data))) {
+            currentEntity = sakai.data.me.user.userid;
+            currentEntityType = "user";
+            pagesVisibility = sakai.config.Permissions.Groups.visible["public"];
+            // Commented out the two lines below for testing -- make sure to 
+            // include them back in after testing has completed
+            //$sitenavigation_settings_icon.remove();
+            //$widget_settings_menu.remove();
+        } else if (sakai.currentgroup && sakai.currentgroup.id) {
+            currentEntity = sakai.currentgroup.id;
+            currentEntityType = "group";
+            pagesVisibility = sakai.currentgroup.data.authprofile["sakai:pages-visible"];
+        }
     };
 
     var init = function() {
+        setPermissions();
         toggleSettings(showSettings);
         debug.log(tuid);
         if (showSettings) {

@@ -106,21 +106,21 @@
                             {
                                 "jcr:uuid": "some-uuid",
                                 "sakai:pageTitle": "My Page",
-                                "sakai:pagePosition": 1000000,
-                                "sakai:deletable": true, 
+                                "sakai:pagePosition": 0,
+                                "sakai:deletable": "true",
                                 "children": 
                                 [
                                     {
                                         "jcr:uuid": "child-uuid",
                                         "sakai:pageTitle": "Child Page",
-                                        "sakai:pagePosition": 1000001
+                                        "sakai:pagePosition": 0
                                     }
                                 ]
                             },
                             {
                                 "jcr:uuid": "another-uuid",
                                 "sakai:pageTitle": "My Second Page",
-                                "sakai:pagePosition": 2000000
+                                "sakai:pagePosition": 1
                             }
                         ]
                     };
@@ -133,10 +133,10 @@
                 $(window).trigger("sakai.site.site-uuid.load", "site-uuid");
             });
             $("#add_page").live("click", function() {
-                var pageObj = {
-                    "jcr:uuid": "child1-uuid",
-                    "sakai:pageTitle": "Child Page1"
-                };
+                var pageObj = {};
+                var rand = Math.ceil(Math.random() * 10000);
+                pageObj["jcr:uuid"] = "child-page-" + rand;
+                pageObj["sakai:pageTitle"] = "Child Page " + rand;
                 $(window).trigger("sakai.sitenavigation.addPage.nav-site-uuid", pageObj);
                 return false;
             });

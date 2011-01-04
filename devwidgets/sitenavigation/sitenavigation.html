@@ -7,8 +7,7 @@
     <div class="fl-widget-titlebar s3d-widget-titlebar" id="sitenavigation_header">
         <div class="widget-titlebar-inner s3d-widget-titlebar-inner">
             <h2 id="sitenavigation_title" class="widget_title">__MSG__PAGES__<span id="sitenavigation_page_count"></span></h2>
-            <a id="sitenavigation_settings_icon" class="fl-force-right fl-icon settings"
-                href="javascript:;" title="__MSG__SETTINGS__" style="display:none;">__MSG__SETTINGS__</a>
+            <a id="sitenavigation_settings_icon" class="fl-force-right fl-icon settings" href="javascript:;" title="__MSG__SETTINGS__" style="display:none;">__MSG__SETTINGS__</a>
         </div>
     </div>
 
@@ -34,7 +33,7 @@
         <div id="sitenavigation_settings" style="display:none;"><!-- TEMPLATE HERE --></div>
         <div id="sitenavigation_settings_template"><!--
             <form id="sitenavigation_settings_form" method="post" action="javascript:;">
-                <p>__MSG__WHO_WOULD_YOU_LIKE_TO_SEE__ <span id="sitenavigation_groupname">${groupname}</span>?</p>
+                <p>__MSG__WHO_WOULD_YOU_LIKE_TO_SEE__ <span id="sitenavigation_groupname">${entity}</span>?</p>
                 <p><select id="sitenavigation_pages_visibility">
                         <option{if visible===sakai.config.Permissions.Groups.visible.public}
                             selected="selected"{/if} value="${sakai.config.Permissions.Groups.visible.public}">
