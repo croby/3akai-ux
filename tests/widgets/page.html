@@ -103,6 +103,10 @@
                     };
                 }
             });
+
+            $(window).bind("sakai.page.ready", function(e){
+                $(window).trigger("sakai.page.123.load", "123");
+            });
         </script>
     </body>
 </html>
