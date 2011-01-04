@@ -243,6 +243,7 @@ sakai.sitenavigation = function(tuid, showSettings){
     var parseState = function(callback) {
         var pageState = $.bbq.getState("page");
         if (pageState && pageState !== currentPage) {
+            currentPage = pageState;
             $(window).trigger("sakai.sitenavigation." + tuid + ".newState");
             var $selected = $sitenavigation_tree.jstree("get_selected");
             var $nodeToSelect = $sitenavigation_tree.find("#nav_" + pageState);
@@ -250,7 +251,6 @@ sakai.sitenavigation = function(tuid, showSettings){
             // ensure the node is valid and that we're not selecting an already-selected node
             if ($nodeToSelect.length && $selected.attr("id") !== $nodeToSelect.attr("id")) {
                 debug.log("selecting");
-                currentPage = pageState;
                 $(".page", "#" + siteData["jcr:uuid"]).hide(); // rootel of the site
                 $("#" + pageState).show();
                 $sitenavigation_tree.jstree("deselect_node", $selected);
