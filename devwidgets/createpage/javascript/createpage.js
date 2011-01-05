@@ -33,6 +33,9 @@ var sakai = sakai || {};
  */
 sakai.createpage = function(tuid, showSettings){
 
+    var mytemplates = false;
+    var site_uuid = false;
+
     /////////////////////////////
     // Configuration variables //
     /////////////////////////////
@@ -102,14 +105,14 @@ sakai.createpage = function(tuid, showSettings){
         var json = {
             templates: []
         };
-        if(sakai.sitespages && sakai.sitespages.mytemplates) {
+        if(mytemplates) {
             // create a custom list of templates with just the info we care about
-            for(var t in sakai.sitespages.mytemplates) {
-                if(sakai.sitespages.mytemplates.hasOwnProperty(t)) {
+            for(var t in mytemplates) {
+                if(mytemplates.hasOwnProperty(t)) {
                     var template = {
                         "id": t,
-                        "name": sakai.sitespages.mytemplates[t].name,
-                        "desc": sakai.sitespages.mytemplates[t].description
+                        "name": mytemplates[t].name,
+                        "desc": mytemplates[t].description
                     };
                     json.templates.push(template);
                 }
@@ -163,36 +166,17 @@ sakai.createpage = function(tuid, showSettings){
             showProcessing();  // display "Processing..."
             var pageType = $selectPageType.val();
             if(pageType === "blank") {
-                sakai.sitespages.createNewPage(pageTitle, "", handleNewPageCreation);
+                sakai.createpage.createNewPage(pageTitle);
             } else if(pageType === "template") {
                 // fetch the selected template and its content to create a new page
                 var selectedTemplate = $("input:radio:checked", $createpageContainer).val();
-                sakai.sitespages.createNewPage(pageTitle,
-                    sakai.sitespages.mytemplates[selectedTemplate]["pageContent"]["sakai:pagecontent"],
-                    handleNewPageCreation);
+                sakai.createpage.createNewPage(pageTitle, "regular",
+                    mytemplates[selectedTemplate]["pageContent"]["sakai:pagecontent"]);
             } else {
-                sakai.sitespages.addDashboardPage(pageTitle, handleNewPageCreation);
+                sakai.createpage.createNewPage(pageTitle, "", "dashboard");
             }
         }
     });
-
-    /**
-     * Callback function called upon completion of sakai.sitespages.createNewPage
-     * called on submit event of the create page form.
-     * @param {Boolean} success true if the call succeeded, false otherwise
-     */
-    var handleNewPageCreation = function (success) { 
-        hideProcessing();
-        if(success) {
-            // hide the modal
-            $createpageContainer.jqmHide();
-        } else {
-            debug.error("createpage.js - handleNewPageCreation: creating page failed.");
-            sakai.api.Util.notification.show($("#createpage_createpage").text(),
-                                            $("#createpage_cannot_create_page").text(),
-                                            sakai.api.Util.notification.type.ERROR);
-        }
-    };
 
     /**
      * Show available templates when the user selects Create page from template
@@ -218,12 +202,12 @@ sakai.createpage = function(tuid, showSettings){
     $createpageContainer.delegate("a.createpage_delete_template_link", "click",
     function () {
         var templateDeleted = this.id.split("_")[1];
-        delete sakai.sitespages.mytemplates[templateDeleted];
+        delete mytemplates[templateDeleted];
         // Save updated template preferences
         // -- this has a bug right now. The save is not overwriting the templates
         // -- at /~userid/private/templates as expected - maybe a special jcr flag (i.e. :replace)?
         sakai.api.Server.saveJSON("/~" + sakai.data.me.user.userid + "/private/templates",
-            sakai.sitespages.mytemplates, function(success, response) {
+            mytemplates, function(success, response) {
             if (success) {
                 showTemplates();
             } else {
@@ -232,6 +216,39 @@ sakai.createpage = function(tuid, showSettings){
         });
     });
 
+    var loadTemplates = function() {
+        // Load template configuration file
+        sakai.api.Server.loadJSON("/~" + sakai.data.me.user.userid + "/private/templates", function(success, pref_data){
+            if (success) {
+                sakai.createpage.mytemplates = pref_data;
+            } else {
+                sakai.createpage.mytemplates = {};
+            }
+        });
+    };
+
+    /**
+    * Create a new page
+    * @param {String} [title] Optional title of the new page. Default is 'Untitled'
+    * @param {String} [type] Type of the page, either "dashboard" or "regular"
+    *   Default is "regular".
+    * @param {String} [content] Optional TinyMCE HTML content of the new page.
+    *   Default is empty content. Will be ignored for dashboard pages
+    * @param {Function} [callback] Optional callback function once the page is
+    *   created. One argument, success, is sent to the callback function -
+    *   true if the page was created successfully, false otherwise
+    * @return void
+    */
+    sakai.createpage.createNewPage = function(title, type, content) {
+        var pageTitle = (title && typeof(title) === "string") ?
+            sakai.api.Security.saneHTML(title) : sakai.api.i18n.General.getValueForKey("UNTITLED_PAGE");
+
+        var pageType = (type && typeof(type) === "string") ? type : "regular";
+
+        $(window).trigger("sakai.createpage." + site_uuid + ".done", {"title":pageTitle, "page_type":type, "content":content});
+        $createpageContainer.jqmHide();
+    };
+
     //////////////////////////////
     // Initialization function  //
     //////////////////////////////
@@ -239,7 +256,8 @@ sakai.createpage = function(tuid, showSettings){
     /**
      * Public init function that shows the createpage modal dialog
      */
-    sakai.createpage.initialise = function(){
+    sakai.createpage.initialise = function(uuid){
+        site_uuid = uuid;
         // add jqModal functionality to the container
         $createpageContainer.jqm({
             modal: true,
@@ -250,7 +268,7 @@ sakai.createpage = function(tuid, showSettings){
         .jqmAddClose($createpageCancel);
         
         // Load page templates
-        sakai.sitespages.loadTemplates();
+        loadTemplates();
         $createpageSubmit.removeAttr("disabled");
         // show container
         $createpageContainer.jqmShow();

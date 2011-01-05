@@ -56,7 +56,8 @@ sakai.sitenavigation = function(tuid, showSettings){
         $widget_settings_menu = $("#widget_settings_menu", $rootel),
         $sitenavigation_settings_form = $("#sitenavigation_settings_form", $rootel),
         $sitenavigation_pages_visibility = $("#sitenavigation_pages_visibility", $rootel),
-        $sitenavigation_delete_page = $("#sitenavigation_delete_page", $rootel);
+        $sitenavigation_delete_page = $("#sitenavigation_delete_page", $rootel),
+        $sitenavigation_create_page = $("#sitenavigation_create_page", $rootel);
 
     /**
      * Create a node for JSTree to use
@@ -396,6 +397,11 @@ sakai.sitenavigation = function(tuid, showSettings){
         $sitenavigation_delete_page.live("click", function() {
             $(window).trigger("sakai.sitenavigation.deletePage.nav-site-uuid");
             return false;
+        });
+
+        $sitenavigation_create_page.die("click");
+        $sitenavigation_create_page.live("click", function() {
+            sakai.createpage.initialise(tuid);
         });
     };
 
