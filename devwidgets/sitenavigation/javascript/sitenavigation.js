@@ -399,9 +399,10 @@ sakai.sitenavigation = function(tuid, showSettings){
             return false;
         });
 
+        var cp_uuid = tuid.replace(/^nav/, "create");
         $sitenavigation_create_page.die("click");
         $sitenavigation_create_page.live("click", function() {
-            sakai.createpage.initialise(tuid);
+            $(window).trigger("sakai.createpage." + cp_uuid + ".new");
         });
     };
 

@@ -34,7 +34,6 @@ var sakai = sakai || {};
 sakai.createpage = function(tuid, showSettings){
 
     var mytemplates = false;
-    var site_uuid = false;
 
     /////////////////////////////
     // Configuration variables //
@@ -166,14 +165,14 @@ sakai.createpage = function(tuid, showSettings){
             showProcessing();  // display "Processing..."
             var pageType = $selectPageType.val();
             if(pageType === "blank") {
-                sakai.createpage.createNewPage(pageTitle);
+                createNewPage(pageTitle);
             } else if(pageType === "template") {
                 // fetch the selected template and its content to create a new page
                 var selectedTemplate = $("input:radio:checked", $createpageContainer).val();
-                sakai.createpage.createNewPage(pageTitle, "regular",
+                createNewPage(pageTitle, "regular",
                     mytemplates[selectedTemplate]["pageContent"]["sakai:pagecontent"]);
             } else {
-                sakai.createpage.createNewPage(pageTitle, "", "dashboard");
+                createNewPage(pageTitle, "", "dashboard");
             }
         }
     });
@@ -239,13 +238,13 @@ sakai.createpage = function(tuid, showSettings){
     *   true if the page was created successfully, false otherwise
     * @return void
     */
-    sakai.createpage.createNewPage = function(title, type, content) {
+    var createNewPage = function(title, type, content) {
         var pageTitle = (title && typeof(title) === "string") ?
             sakai.api.Security.saneHTML(title) : sakai.api.i18n.General.getValueForKey("UNTITLED_PAGE");
 
         var pageType = (type && typeof(type) === "string") ? type : "regular";
 
-        $(window).trigger("sakai.createpage." + site_uuid + ".done", {"title":pageTitle, "page_type":type, "content":content});
+        $(window).trigger("sakai.createpage." + tuid + ".done", {"title":pageTitle, "page_type":type, "content":content});
         $createpageContainer.jqmHide();
     };
 
@@ -256,8 +255,7 @@ sakai.createpage = function(tuid, showSettings){
     /**
      * Public init function that shows the createpage modal dialog
      */
-    sakai.createpage.initialise = function(uuid){
-        site_uuid = uuid;
+    var initialise = function(){
         // add jqModal functionality to the container
         $createpageContainer.jqm({
             modal: true,
@@ -266,7 +264,7 @@ sakai.createpage = function(tuid, showSettings){
             onHide: resetModalDialog
         })
         .jqmAddClose($createpageCancel);
-        
+
         // Load page templates
         loadTemplates();
         $createpageSubmit.removeAttr("disabled");
@@ -274,6 +272,11 @@ sakai.createpage = function(tuid, showSettings){
         $createpageContainer.jqmShow();
         $inputPageTitle.focus();
     };
+
+    $(window).unbind("sakai.createpage." + tuid + ".new");
+    $(window).bind("sakai.createpage." + tuid + ".new", function() {
+        initialise();
+    });
 
 };
 

@@ -39,7 +39,9 @@ sakai.site = function(tuid, showSettings) {
     var $site_pages_template = $("#site_pages_template", $rootel),
         $site_page_container = $("#site_page_container", $rootel),
         $site_navigation_template = $("#site_navigation_template", $rootel),
+        $site_createpage_template = $("#site_createpage_template", $rootel),
         $site_navigation_container = $("#site_navigation_container", $rootel);
+        $site_createpage_container = $("#site_createpage_container", $rootel);
 
     var getSiteData = function() {
         sakai.api.Server.loadJSON(SITE_DATA_SERVICE, function(success, data) {
@@ -106,6 +108,7 @@ sakai.site = function(tuid, showSettings) {
             $(window).trigger("sakai.sitenavigation.nav-" + tuid + ".render", {"siteData": siteData, "canEdit": true});
         });
         $.TemplateRenderer($site_navigation_template, {"nav_tuid": "nav-" + tuid}, $site_navigation_container);
+        $.TemplateRenderer($site_createpage_template, {"create_tuid": "create-" + tuid}, $site_createpage_container);
     };
 
     var removePageFromSite = function(page) {
