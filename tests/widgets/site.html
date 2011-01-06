@@ -64,6 +64,7 @@
         <script type="text/javascript" src="/dev/lib/jquery/plugins/jquery.jeditable.js"></script>
         <script type="text/javascript" src="/dev/lib/jquery/plugins/jquery.validate.sakai-edited.js"></script>
         <script type="text/javascript" src="/dev/lib/jquery/plugins/imgareaselect/jquery.imgareaselect.js"></script>
+        <script type="text/javascript" src="/dev/lib/tinymce/tiny_mce.js"></script>
         <script src="/tests/qunit/js/jquery.mockjax.js"></script>
 
     </head>
@@ -128,10 +129,24 @@
                 } 
             });
 
-            // Page code
-            $(window).bind("sakai.site.ready", function(e){
-                $(window).trigger("sakai.site.site-uuid.load", "site-uuid");
+            $.mockjax({
+                url: "/var/services/getPageData.json",
+                response: function(settings) {
+                    this.responseText = {
+                        "sling:resourceType":"sakai/page",
+                        "jcr:uuid": settings.data,
+                        "sakai:pageContent": "<p>html <i>string</i> of page content"  + Math.ceil(Math.random() * 1000) + "</p>",
+                        "sakai:pageTitle": "Page Title " + Math.ceil(Math.random() * 1000),
+                        "sakai:pageDescription": "Page Description " + Math.ceil(Math.random() * 1000)
+                    };
+                }
             });
+
+            // Page code
+            $(window).bind("sakai.site.site-uuid.ready", function(e){
+                $(window).trigger("sakai.site.site-uuid.load");
+            });
+
             $("#add_page").live("click", function() {
                 var pageObj = {};
                 var rand = Math.ceil(Math.random() * 10000);

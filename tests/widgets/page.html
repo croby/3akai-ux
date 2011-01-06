@@ -65,6 +65,7 @@
         <script type="text/javascript" src="/dev/lib/jquery/plugins/jquery.jeditable.js"></script>
         <script type="text/javascript" src="/dev/lib/jquery/plugins/jquery.validate.sakai-edited.js"></script>
         <script type="text/javascript" src="/dev/lib/jquery/plugins/imgareaselect/jquery.imgareaselect.js"></script>
+        <script type="text/javascript" src="/dev/lib/tinymce/tiny_mce.js"></script>
         <script src="/tests/qunit/js/jquery.mockjax.js"></script>
     </head>
 
@@ -84,7 +85,9 @@
 
         <!-- CONTENT -->
         <div class="fl-centered fixed-container" style="background: #fff; min-height: 400px;" id="page_test">
-            <div id="widget_page_123" class="widget_inline"></div>
+            <div id="site-uuid">
+                <div id="widget_page_page-uuid_site-uuid" class="widget_inline page"></div>
+            </div>
         </div>
 
         <!-- FOOTER WIDGET -->
@@ -104,8 +107,8 @@
                 }
             });
 
-            $(window).bind("sakai.page.ready", function(e){
-                $(window).trigger("sakai.page.123.load", "123");
+            $(window).bind("sakai.page.site-uuid.page-uuid.ready", function(e){
+                $(window).trigger("sakai.page.site-uuid.page-uuid.show", {"editable": true, "pageEmbedProperty": "grouppages"});
             });
         </script>
     </body>

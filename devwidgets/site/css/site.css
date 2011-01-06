@@ -3,6 +3,8 @@
     display: block !important;
 }
 
+.page { display:none;}
+
 /** TOP RIGHT MENU **/
 .sakai_site #content_page_options_container
 { height:25px; display:block; margin: 5px 0px 0 0;  }

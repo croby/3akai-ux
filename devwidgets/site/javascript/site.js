@@ -48,9 +48,6 @@ sakai.site = function(tuid, showSettings) {
             if (success) {
                 siteData = data;
                 setupPages();
-                setupNavigation();
-                // run insertWidgets (commented out for now, just to make sure everything works correctly)
-                sakai.api.Widgets.widgetLoader.insertWidgets(tuid);
             }
         }, tuid);
 
@@ -74,15 +71,32 @@ sakai.site = function(tuid, showSettings) {
         return ret;
     };
 
+    var pagesDone = 0;
+    var totalPages = 0;
+
+    var checkPagesLoaded = function() {
+        pagesDone++;
+        // after pages are ready to go, load the navigation
+        if (pagesDone === totalPages) {
+            setupNavigation();
+            sakai.api.Widgets.widgetLoader.insertWidgets("site_navigation_container");
+            pagesDone = 0;
+        }
+    };
+
     /**
      * Set up the pages from the site object
      */
     var setupPages = function() {
         // instantiate each page widget in the DOM
         var pages = findAllPages(siteData.pages);
-        debug.log(pages);
-
+        totalPages = pages.length;
+        for (var i=0, j=pages.length; i<j; i++) {
+            $(window).bind("sakai.page." + tuid + "." + pages[i] + ".ready", checkPagesLoaded);
+        }
         $.TemplateRenderer($site_pages_template, {"site_uuid": tuid, "pages": pages}, $site_page_container);
+        // just insert the pages for now
+        sakai.api.Widgets.widgetLoader.insertWidgets("site_page_container");
     };
 
     /**
@@ -108,7 +122,6 @@ sakai.site = function(tuid, showSettings) {
             $(window).trigger("sakai.sitenavigation.nav-" + tuid + ".render", {"siteData": siteData, "canEdit": true});
         });
         $.TemplateRenderer($site_navigation_template, {"nav_tuid": "nav-" + tuid}, $site_navigation_container);
-        $.TemplateRenderer($site_createpage_template, {"create_tuid": "create-" + tuid}, $site_createpage_container);
     };
 
     var removePageFromSite = function(page) {
@@ -135,8 +148,9 @@ sakai.site = function(tuid, showSettings) {
         else {
         }
         bindSiteEvents();
-        $(window).trigger("sakai.site.ready");
-        sakai.site.isReady = true;
+        $(window).trigger("sakai.site." + tuid + ".ready");
+        sakai.site[tuid] = {};
+        sakai.site[tuid].isReady = true;
     };
 
     init();

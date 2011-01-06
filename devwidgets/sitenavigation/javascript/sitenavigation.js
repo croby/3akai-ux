@@ -42,7 +42,8 @@ sakai.sitenavigation = function(tuid, showSettings){
         currentPage = false,
         currentEntity = false,
         currentEntityType = false,
-        pagesVisibility = false;
+        pagesVisibility = false,
+        createPageUUID = false;
 
     var $rootel = $("#" + tuid),
         $sitenavigation_main = $("#sitenavigation_main", $rootel),
@@ -57,7 +58,9 @@ sakai.sitenavigation = function(tuid, showSettings){
         $sitenavigation_settings_form = $("#sitenavigation_settings_form", $rootel),
         $sitenavigation_pages_visibility = $("#sitenavigation_pages_visibility", $rootel),
         $sitenavigation_delete_page = $("#sitenavigation_delete_page", $rootel),
-        $sitenavigation_create_page = $("#sitenavigation_create_page", $rootel);
+        $sitenavigation_create_page = $("#sitenavigation_create_page", $rootel),
+        $sitenavigation_createpage_template = $("#sitenavigation_createpage_template", $rootel),
+        $sitenavigation_createpage_container = $("#sitenavigation_createpage_container", $rootel);
 
     /**
      * Create a node for JSTree to use
@@ -248,26 +251,27 @@ sakai.sitenavigation = function(tuid, showSettings){
             $(window).trigger("sakai.sitenavigation." + tuid + ".newState");
             var $selected = $sitenavigation_tree.jstree("get_selected");
             var $nodeToSelect = $sitenavigation_tree.find("#nav_" + pageState);
-            debug.log($selected, $nodeToSelect);
+            var siteUUID = siteData["jcr:uuid"];
+            var pageUUID = pageState.split(siteUUID + "_")[1];
+            var $page = $("#" + pageUUID, "#" + siteUUID);
             // ensure the node is valid and that we're not selecting an already-selected node
             if ($nodeToSelect.length && $selected.attr("id") !== $nodeToSelect.attr("id")) {
-                debug.log("selecting");
-                $(".page", "#" + siteData["jcr:uuid"]).hide(); // rootel of the site
-                $("#" + pageState).show();
+                $(".page", "#" + siteUUID).hide(); // rootel of the site
+                debug.log("showing", $page.selector);
+                $page.find(".page").show();
+                $(window).trigger("sakai.page." + siteUUID + "." + pageUUID + ".show", {"canEdit": canEdit});
                 $sitenavigation_tree.jstree("deselect_node", $selected);
                 $sitenavigation_tree.jstree("select_node", $nodeToSelect);
-                debug.log("after selection, selected", $sitenavigation_tree.jstree("get_selected"));
             } else if (siteData && siteData.pages && $selected.attr("id") !== $nodeToSelect.attr("id")) {
-                debug.log("no node to select", $nodeToSelect);
-                $.bbq.pushState({"page": siteData["jcr:uuid"] + "_" + siteData.pages[0]["jcr:uuid"]});
+                $.bbq.pushState({"page": siteUUID + "_" + siteData.pages[0]["jcr:uuid"]});
             } else if ($selected.attr("id") === $nodeToSelect.attr("id")) {
-                debug.log("equal, just hiding/showing");
                 currentPage = pageState;
-                $(".page", "#" + siteData["jcr:uuid"]).hide();
-                $("#" + pageState).show();
+                $(".page", "#" + siteUUID).hide();
+                debug.log("showing", $page.selector);
+                $page.find(".page").show();
+                $(window).trigger("sakai.page." + siteUUID + "." + pageUUID + ".show", {"canEdit": canEdit});
             }
         } else if (!currentPage && siteData && siteData.pages) {
-            debug.log("pushing the first page");
             $.bbq.pushState({"page": siteData["jcr:uuid"] + "_" + siteData.pages[0]["jcr:uuid"]});
         }
     };
@@ -399,10 +403,10 @@ sakai.sitenavigation = function(tuid, showSettings){
             return false;
         });
 
-        var cp_uuid = tuid.replace(/^nav/, "create");
+        
         $sitenavigation_create_page.die("click");
         $sitenavigation_create_page.live("click", function() {
-            $(window).trigger("sakai.createpage." + cp_uuid + ".new");
+            $(window).trigger("sakai.createpage." + createPageUUID + ".new");
         });
     };
 
@@ -431,6 +435,9 @@ sakai.sitenavigation = function(tuid, showSettings){
         } else {
             bindEvents();
         }
+        createPageUUID = tuid.replace(/^nav/, "create");
+        $.TemplateRenderer($sitenavigation_createpage_template, {"create_tuid": createPageUUID}, $sitenavigation_createpage_container);
+        sakai.api.Widgets.widgetLoader.insertWidgets(tuid);
         debug.log("sakai.site.nav." + tuid + ".ready");
         $(window).trigger("sakai.site.nav." + tuid + ".ready");
     };
