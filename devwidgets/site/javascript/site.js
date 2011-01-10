@@ -33,7 +33,8 @@
 sakai.site = function(tuid, showSettings) {
 
     var SITE_DATA_SERVICE = "/var/services/gimmeSiteData.json";
-    var siteData = {};
+    var siteData = {},
+        pageEmbedProperty = false;
 
     var $rootel = $("#" + tuid);
     var $site_pages_template = $("#site_pages_template", $rootel),
@@ -119,7 +120,11 @@ sakai.site = function(tuid, showSettings) {
         $(window).unbind("sakai.site.nav.nav-" + tuid + ".ready");
         $(window).bind("sakai.site.nav.nav-" + tuid + ".ready", function() {
             debug.log("sitenavigation is ready");
-            $(window).trigger("sakai.sitenavigation.nav-" + tuid + ".render", {"siteData": siteData, "canEdit": true});
+            $(window).trigger("sakai.sitenavigation.nav-" + tuid + ".render", {
+                "siteData": siteData, 
+                "canEdit": true, 
+                "pageEmbedProperty": pageEmbedProperty
+            });
         });
         $.TemplateRenderer($site_navigation_template, {"nav_tuid": "nav-" + tuid}, $site_navigation_container);
     };
@@ -134,7 +139,8 @@ sakai.site = function(tuid, showSettings) {
 
     var bindSiteEvents = function() {
         $(window).unbind("sakai.site." + tuid + ".load");
-        $(window).bind("sakai.site." + tuid + ".load", function(e) {
+        $(window).bind("sakai.site." + tuid + ".load", function(e, obj) {
+            pageEmbedProperty = obj.pageEmbedProperty;
             getSiteData();
         });
     };

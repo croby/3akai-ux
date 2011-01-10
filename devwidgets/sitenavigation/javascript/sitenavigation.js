@@ -43,7 +43,8 @@ sakai.sitenavigation = function(tuid, showSettings){
         currentEntity = false,
         currentEntityType = false,
         pagesVisibility = false,
-        createPageUUID = false;
+        createPageUUID = false,
+        pageEmbedProperty = false;
 
     var $rootel = $("#" + tuid),
         $sitenavigation_main = $("#sitenavigation_main", $rootel),
@@ -259,7 +260,7 @@ sakai.sitenavigation = function(tuid, showSettings){
                 $(".page", "#" + siteUUID).hide(); // rootel of the site
                 debug.log("showing", $page.selector);
                 $page.find(".page").show();
-                $(window).trigger("sakai.page." + siteUUID + "." + pageUUID + ".show", {"canEdit": canEdit});
+                $(window).trigger("sakai.page." + siteUUID + "." + pageUUID + ".show", {"canEdit": canEdit, "pageEmbedProperty": pageEmbedProperty});
                 $sitenavigation_tree.jstree("deselect_node", $selected);
                 $sitenavigation_tree.jstree("select_node", $nodeToSelect);
             } else if (siteData && siteData.pages && $selected.attr("id") !== $nodeToSelect.attr("id")) {
@@ -269,7 +270,7 @@ sakai.sitenavigation = function(tuid, showSettings){
                 $(".page", "#" + siteUUID).hide();
                 debug.log("showing", $page.selector);
                 $page.find(".page").show();
-                $(window).trigger("sakai.page." + siteUUID + "." + pageUUID + ".show", {"canEdit": canEdit});
+                $(window).trigger("sakai.page." + siteUUID + "." + pageUUID + ".show", {"canEdit": canEdit, "pageEmbedProperty": pageEmbedProperty});
             }
         } else if (!currentPage && siteData && siteData.pages) {
             $.bbq.pushState({"page": siteData["jcr:uuid"] + "_" + siteData.pages[0]["jcr:uuid"]});
@@ -349,9 +350,9 @@ sakai.sitenavigation = function(tuid, showSettings){
         $(window).unbind("sakai.sitenavigation." + tuid);
 
         $(window).bind("sakai.sitenavigation." + tuid + ".render", function(e, obj) {
-            debug.log("render");
             canEdit = obj.canEdit;
             siteData = obj.siteData;
+            pageEmbedProperty = obj.pageEmbedProperty || "";
             toggleEdit(canEdit);
             $(window).bind("sakai.sitenavigation."  + tuid + ".newState", function() {
                 $(window).unbind("sakai.sitenavigation." + tuid + ".newState");

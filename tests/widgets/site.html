@@ -144,7 +144,7 @@
 
             // Page code
             $(window).bind("sakai.site.site-uuid.ready", function(e){
-                $(window).trigger("sakai.site.site-uuid.load");
+                $(window).trigger("sakai.site.site-uuid.load", {"pageEmbedProperty": "grouppages"});
             });
 
             $("#add_page").live("click", function() {
