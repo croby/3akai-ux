@@ -48,11 +48,7 @@ define(["jquery"], function($) {
          * @param {Boolean|String} [mailContent] False or String of content that contains HTML or regular text
          *
          */
-        sendMessage: function(to, from, subject, body, category, reply, callback, sendMail) {
-
-            /////////////////////////////
-            // CONFIGURATION VARIABLES //
-            /////////////////////////////
+        sendMessage : function(to, from, subject, body, category, reply, callback, sendMail, context) {
 
             var toUsers = "";              // aggregates all message recipients
             var sendDone = false;          // has the send been issued?
@@ -81,19 +77,153 @@ define(["jquery"], function($) {
                 }
             };
 
-            var doSendMail = function(){
-                // Basic message details
+            var buildEmailParams = function(){
                 var toSend = {
                     "sakai:type": "smtp",
                     "sakai:sendstate": "pending",
                     "sakai:messagebox": "outbox",
                     "sakai:to": toUsers,
-                    "sakai:from": from,
+                    "sakai:from": sakai.data.me.user.userid,
                     "sakai:subject": subject,
                     "sakai:body": body,
                     "sakai:category": "message",
                     "_charset_": "utf-8"
                 };
+
+                switch(context){
+                    case "new_message":
+                        toSend["sakai:templatePath"] = templatePath = "/var/templates/new_message";
+                        toSend["sakai:templateParams"] = {
+                            "jcr:primaryType": "nt:unstructured",
+                            "sender": {
+                                "value": sakai.data.me.profile.basic.elements.firstName.value + " " + sakai.data.me.profile.basic.elements.lastName.value,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "system": {
+                                "value": "Sakai",
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "subject": {
+                                "value": subject,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "body": {
+                                "value": body,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "link": {
+                                "value": sakai.config.SakaiDomain + sakai.config.URL.INBOX_URL,
+                                "jcr:primaryType": "nt:unstructured"
+                            }
+                        };
+                        break;
+                    case "join_request":
+                        toSend["sakai:templatePath"] = templatePath = "var/templates/join_request";
+                        toSend["sakai:templateParams"] = {
+                            "jcr:primaryType": "nt:unstructured",
+                            "sender": {
+                                "value": sakai.data.me.profile.basic.elements.firstName.value + " " + sakai.data.me.profile.basic.elements.lastName.value,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "system": {
+                                "value": "Sakai",
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "name": {
+                                "value": sakai_global.currentgroup.data.authprofile["sakai:group-title"],
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "profilelink": {
+                                "value": sakai.config.SakaiDomain + "~" + sakai.data.me.user.userid,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "acceptlink" :{
+                                "value": sakai.config.SakaiDomain + sakai.config.URL.GROUP_EDIT_URL + "?id=" +  sakai_global.currentgroup.id,
+                                "jcr:primaryType": "nt:unstructured"
+                            }
+                        };
+                        break;
+                    case "group_invitation":
+                        toSend["sakai:templatePath"] = templatePath = "var/templates/group_invitation";
+                        toSend["sakai:templateParams"] = {
+                            "jcr:primaryType": "nt:unstructured",
+                            "sender": {
+                                "value": sakai.data.me.profile.basic.elements.firstName.value + " " + sakai.data.me.profile.basic.elements.lastName.value,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "system": {
+                                "value": "Sakai",
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "name": {
+                                "value": sakai_global.currentgroup.data.authprofile["sakai:group-title"],
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "body": {
+                                "value": body,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "link": {
+                                "value": sakai.config.SakaiDomain + "~" + sakai_global.currentgroup.id,
+                                "jcr:primaryType": "nt:unstructured"
+                            }
+                        };
+                        break;
+                    case "shared_content":
+                        toSend["sakai:templatePath"] = templatePath = "var/templates/shared_content";
+                        toSend["sakai:templateParams"] = {
+                            "jcr:primaryType": "nt:unstructured",
+                            "sender": {
+                                "value": sakai.data.me.profile.basic.elements.firstName.value + " " + sakai.data.me.profile.basic.elements.lastName.value,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "system": {
+                                "value": "Sakai",
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "name": {
+                                "value": sakai.content_profile.content_data.data["sakai:pooled-content-file-name"],
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "description": {
+                                "value": sakai.content_profile.content_data.data["sakai:description"],
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "body": {
+                                "value": body,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "link": {
+                                "value": sakai.content_profile.content_data.url,
+                                "jcr:primaryType": "nt:unstructured"
+                            }
+                        };
+                        break;
+                    case "contact_invitation":
+                        toSend["sakai:templatePath"] = templatePath = "var/templates/contact_invitation";
+                        toSend["sakai:templateParams"] = {
+                            "jcr:primaryType": "nt:unstructured",
+                            "sender": {
+                                "value": sakai.data.me.profile.basic.elements.firstName.value + " " + sakai.data.me.profile.basic.elements.lastName.value,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "system": {
+                                "value": "Sakai",
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "body": {
+                                "value": body,
+                                "jcr:primaryType": "nt:unstructured"
+                            },
+                            "link": {
+                                "value": sakai.config.SakaiDomain + "~" + sakai.data.me.user.userid +"?accept=true",
+                                "jcr:primaryType": "nt:unstructured"
+                            }
+                        };
+                        break;
+                    default:
+                        break;
+                }
 
                 // Message category
                 if (category) {
@@ -106,6 +236,13 @@ define(["jquery"], function($) {
                 if (reply) {
                     toSend["sakai:previousmessage"] = reply;
                 }
+                return toSend;
+            };
+
+            var doSendMail = function() {
+                // Basic message details
+                var toSend = buildEmailParams();
+
 
                 // Send message
                 $.ajax({
@@ -127,11 +264,6 @@ define(["jquery"], function($) {
                 sendDone = true;
             };
 
-            /**
-             * Sets up and initiates an AJAX POST to send this message to its recipients
-             * @param None
-             * @return None
-             */
             var doSendMessage = function() {
                 // Basic message details
                 var toSend = {
