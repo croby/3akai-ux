@@ -102,7 +102,18 @@
                     <a href="#reply=true">__MSG__REPLY__</a>
                     <div class="newinbox_show_message_reply_fields"></div>
                 </div>
-                <div id="newinbox_show_message_replies"></div>
+                {macro showReplies(reply)}
+                    From: ${reply.from.name}
+                    
+                    {if reply.previousMessage}
+                        ${showReplies(reply.previousMessage)}
+                    {/if}
+                {/macro}
+                <div id="newinbox_show_message_replies">
+                    {if message.previousMessage}
+                        ${showReplies(message.previousMessage)}
+                    {/if}
+                </div>
             --></div>
 
             <!-- New Message -->

@@ -121,6 +121,7 @@ require(["jquery", "sakai/sakai.api.core", "/tests/qunit/js/jquery.mockjax.js"],
             $newinbox_message_list.hide();
             doHideReply();
             $newinbox_back_to_messages.show();
+            debug.log(currentMessage);
             sakai.api.Util.TemplateRenderer($newinbox_show_message_template, {message:currentMessage}, $newinbox_show_message);
             if (!currentMessage.read) {
                 sakai.api.Communication.markMessagesAsRead(currentMessage.path);
@@ -140,7 +141,7 @@ require(["jquery", "sakai/sakai.api.core", "/tests/qunit/js/jquery.mockjax.js"],
 
         var showReply = function() {
             $newinbox_show_message_reply_fields = $($newinbox_show_message_reply_fields.selector);
-            $(window).trigger("initialize.sendmessage.sakai", [currentMessage.from.userObj, $newinbox_show_message_reply_fields, hideReply, "Re: " + currentMessage.subject, null, true]);
+            $(window).trigger("initialize.sendmessage.sakai", [currentMessage.from.userObj, $newinbox_show_message_reply_fields, hideReply, "Re: " + currentMessage.subject, null, true, currentMessage.id]);
             $newinbox_show_message_reply_fields.show();
         };
 
