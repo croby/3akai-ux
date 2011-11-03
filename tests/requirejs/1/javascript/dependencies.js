@@ -25,7 +25,7 @@ require(["order!jquery",
     "order!/dev/lib/jquery/plugins/jqmodal.sakai-edited.js",
     "order!/dev/lib/jquery/plugins/jquery.cookie.js",
     "order!/dev/lib/jquery/plugins/jquery.ba-bbq.js",
-    "order!/dev/lib/jquery/plugins/jquery.pager.js",
+    "order!/dev/lib/jquery/plugins/jquery.pager.sakai-edited.js",
     "order!/dev/lib/jquery/plugins/jquery.threedots.js",
     "order!/dev/lib/jquery/plugins/jquery.form.js",
     "order!/dev/lib/jquery/plugins/jquery.MultiFile.js",
@@ -34,7 +34,7 @@ require(["order!jquery",
     "order!/dev/requirejs/lib/core.js"
     
     ], function(){
-        require.ready(function(){
+        require(["misc/domReady!"], function(doc){
             debug.log("dependencies.js ready");
                         
             //require(["/dev/requirejs/javascript/page.js"]);

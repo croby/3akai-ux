@@ -65,7 +65,6 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai, sakai_util) {
         // Profile info
         var addToContactsInfoProfilePicture = addToContacts + "_profilepicture";
         var addToContactsInfoTypes = addToContacts + "_types";
-        var addToContactsInfoTypesContainer = "#addcontacts_types_container";
         var addToContactsInfoDisplayName = addToContactsClass + "_displayname";
 
         // Error messages
@@ -85,7 +84,10 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai, sakai_util) {
          * It renders the contacts types and the personal note
          */
         var renderTemplates = function(){
-            sakai.api.Util.TemplateRenderer(addToContactsFormTypeTemplate.replace(/#/gi, ""), sakai.config.Relationships, $(addToContactsInfoTypesContainer));
+            sakai.api.Util.TemplateRenderer(addToContactsFormTypeTemplate.replace(/#/gi, ""), {
+                "relationships": sakai.config.Relationships,
+                "sakai": sakai
+            }, $(addToContactsInfoTypes));
             var json = {
                 sakai: sakai,
                 me: sakai.data.me

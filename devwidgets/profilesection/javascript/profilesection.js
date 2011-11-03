@@ -264,7 +264,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/profile_edit.js"], f
                     sakai_global.profile.main.data[currentsection].elements = newData;
                 }
             } else {
-                for(var i in sectionObject.elements) {
+                for(var i in sectionObject.elements){
                     if(sectionObject.elements.hasOwnProperty(i) && sectionObject.elements[i].display){
 
                         // Set the field template, if there is no template defined, use the default one
@@ -314,10 +314,10 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/profile_edit.js"], f
 
             if (!isLocation) {
                 // Render the General info
-                $profilesection_generalinfo.html(sakai.api.Security.saneHTML(sakai.api.i18n.General.process(generalinfo, sakai.data.me)));
+                $profilesection_generalinfo.html(sakai.api.Security.saneHTML(sakai.api.i18n.General.process(generalinfo)));
             } else {
-                $("#profilesection-locations").children().children(":first").append(sakai.api.Security.saneHTML(sakai.api.i18n.General.process(generalinfo, sakai.data.me)));
-                $profilesection_generalinfo.html(sakai.api.Security.saneHTML(sakai.api.i18n.General.process(generalinfo, sakai.data.me)));
+                $("#profilesection-locations").children().children(":first").append(sakai.api.Security.saneHTML(sakai.api.i18n.General.process(generalinfo)));
+                $profilesection_generalinfo.html(sakai.api.Security.saneHTML(sakai.api.i18n.General.process(generalinfo)));
                 $(".profile-section-save-button", $rootel).hide();
             }
             $(window).trigger("ready.profilesection.sakai", [$rootel.attr("id"), profilesection]);
@@ -366,14 +366,13 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/profile_edit.js"], f
             if ($parentSection.find(".profilesection_section:last").length) {
                 $parentSection = $parentSection.find(".profilesection_section:last");
             }
-            var $newSection = $(sakai.api.i18n.General.process(sections, sakai.data.me)).insertAfter($parentSection);
-            // $parentSection.append(sakai.api.i18n.General.process(sections, sakai.data.me));
+            var $newSection = $(sakai.api.i18n.General.process(sections)).insertAfter($parentSection);
             var dataForTemplate = {
                 "config": sectionObject,
                 "parentid": elt.id.value,
                 sakai: sakai
             };
-            $(sakai.api.i18n.General.process(sakai.api.Util.TemplateRenderer($profilesection_add_section_template, dataForTemplate), sakai.data.me)).insertAfter($newSection);
+            $(sakai.api.i18n.General.process(sakai.api.Util.TemplateRenderer($profilesection_add_section_template, dataForTemplate))).insertAfter($newSection);
             $(window).trigger("ready.profilesection.sakai", [$rootel.attr("id"), profilesection]);
         };
 
@@ -405,7 +404,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/profile_edit.js"], f
                       "parentid": "0",
                       sakai: sakai
                   };
-                  sections += sakai.api.i18n.General.process(sakai.api.Util.TemplateRenderer($profilesection_add_section_template, dataForTemplate), sakai.data.me);
+                  sections += sakai.api.i18n.General.process(sakai.api.Util.TemplateRenderer($profilesection_add_section_template, dataForTemplate));
               }
               sections += "</div>";
               $parentSection.parent("div").append(sections);
@@ -499,7 +498,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/profile_edit.js"], f
                             parentProp[0][propName] = {};
                             parentProp[0][propName].value = $selected_element.val();
                         } else if (prop) { // it exists, just change its value
-                            if ($selected_element.is("input") || $selected_element.is("select") || $selected_element.is("textarea")) {
+                            if ($selected_element.is("select, input, textarea")) {
                                 var val = $selected_element.val();
                                 if ($(element).hasClass("date") || $(element).hasClass("oldDate")) { // localize dates
                                     // convert the date into a Date object for storage
@@ -512,13 +511,9 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/profile_edit.js"], f
                                     // This is an access attribute
                                     sakai_global.profile.main.data[title.split(".")[0]].access = val;
                                 }
-                            }
-                            if ($.isPlainObject(prop)) {
-                                // Set the correct value
-                                prop.value = val;
                             } else {
-                                // This is an access attribute
-                                sakai_global.profile.main.data[title.split(".")[0]].access = val;
+                                // this is a non-editable element, delete it from the object so it doesn't save
+                                delete parentProp[0][propName];
                             }
                         } else if ($selected_element.hasClass("profilesection_generalinfo_access")){
                             sakai_global.profile.main.data[title.split(".")[0]].access = $selected_element.val();

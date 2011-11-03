@@ -30,7 +30,7 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
             if (sakai.api.Groups.canCreateTemplate(category)) {
                 pubdata.structure0[category.id] = {
                     "_order": order,
-                    "_title": sakai.api.i18n.General.getValueForKey(category.title),
+                    "_title": sakai.api.i18n.getValueForKey(category.title),
                     "_ref": category.id
                 };
                 pubdata[category.id] = {

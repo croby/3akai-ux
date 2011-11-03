@@ -48,7 +48,7 @@ require(
         "order!/dev/lib/jquery/plugins/jqmodal.sakai-edited.js",
         "order!/dev/lib/jquery/plugins/jquery.cookie.js",
         "order!/dev/lib/jquery/plugins/jquery.ba-bbq.js",
-        "order!/dev/lib/jquery/plugins/jquery.pager.js",
+        "order!/dev/lib/jquery/plugins/jquery.pager.sakai-edited.js",
         "order!/dev/lib/jquery/plugins/jquery.threedots.js",
         "order!/dev/lib/jquery/plugins/jquery.form.js",
         "order!/dev/lib/jquery/plugins/jquery.MultiFile.js",
@@ -56,7 +56,7 @@ require(
         "order!/dev/lib/jquery/plugins/gritter/jquery.gritter.js"
     ],
     function($, a, b, c, d, e, f, g, h, i, j, k, l, m, sakai) {
-        require.ready(function(){
+        require(["misc/domReady!"], function(doc){
             debug.log("dependencies.js ready");
                         
             //require(["/dev/requirejs/javascript/page.js"]);
