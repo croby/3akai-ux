@@ -8,16 +8,18 @@
             {"title": "TAGS", "key": "sakai:tags", "searchable": false}
         ]
     },
-    "description":        "List Participants of a Group - NYU Version",
     "enabled":            false,
     "groupdashboard":     false,
     "grouppages":         true,
     "hasSettings":        false,
     "i18n": {
-        "default":        "/nyuwidgets/nyuparticipants/bundles/default.properties"
+        "default": {
+            "bundle": "/nyuwidgets/nyuparticipants/bundles/default.properties",
+            "description":"List Participants of a Group - NYU Version",
+            "name":"Participants - NYU Version"
+        }
     },
     "id":                 "nyuparticipants",
-    "name":               "Participants - NYU Version",
     "personalportal":     false,
     "showinsakaigoodies": true,
     "type":               "sakai",

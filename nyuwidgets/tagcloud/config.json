@@ -4,16 +4,18 @@
     "grouppages": true,
     "groupdashboard": true,
     "sakaidocs": true,
-    "description": "Tag Cloud Widge",
     "hasSettings": false,
     "showinsakaigoodies":true,
     "id": "tagcloud",
-    "name": "Tag Cloud Widget",
     "type": "contrib",
     "enabled": true,
     "url":"/nyuwidgets/tagcloud/tagcloud.html",
     "i18n": {
-        "default": "/nyuwidgets/tagcloud/bundles/default.properties"
+        "default": {
+            "bundle": "/nyuwidgets/tagcloud/bundles/default.properties",
+            "description":"Tag cloud widget",
+            "name":"Tag cloud widget"
+        }
     },
     "img":"/nyuwidgets/tagcloud/images/tagcloud.png"
 }

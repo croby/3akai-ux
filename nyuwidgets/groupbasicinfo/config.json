@@ -1,16 +1,16 @@
 {
     "grouppages":true,
     "showinsakaigoodies":true,
-    "description":"Group Basic Information",
-    "name":"Group Basic Information",
     "id":"groupbasicinfo",
     "img":"/nyuwidgets/groupbasicinfo/images/icon.png",
     "type":"core",
     "enabled":true,
     "url":"/nyuwidgets/groupbasicinfo/groupbasicinfo.html",
     "i18n": {
-        "default": "/nyuwidgets/groupbasicinfo/bundles/default.properties",
-        "en_GB": "/nyuwidgets/groupbasicinfo/bundles/en_GB.properties",
-        "nl_NL": "/nyuwidgets/groupbasicinfo/bundles/nl_NL.properties"
+        "default": {
+            "bundle": "/nyuwidgets/groupbasicinfo/bundles/default.properties",
+            "description":"Group Basic Information",
+            "name":"Group Basic Information"
+        }
     }
 }

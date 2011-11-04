@@ -1,13 +1,15 @@
 {
     "id":                 "terms",
-    "name":               "NYU Terms Widget",
-    "description":        "NYU Terms Widget - Showing Terms & Condtions for NYU",
     "type":               "contrib",
     "enabled":            false,
     "hasSettings":        false,
     "url":                "/nyuwidgets/terms/terms.html",
     "i18n": {
-        "default":        "/nyuwidgets/terms/bundles/default.properties"
+        "default": {
+            "bundle": "/nyuwidgets/terms/bundles/default.properties",
+            "description":"NYU Terms Widget - Showing Terms & Condtions for NYU",
+            "name":"NYU Terms Widget"
+        }
     },
     "personalportal":     false,
     "sakaidocs":          false,
