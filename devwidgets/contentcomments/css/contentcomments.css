@@ -58,7 +58,7 @@
 .contentcomments_comment.first{border-bottom:none;}
 .contentcomments_comment.last{border-top:1px solid #DFDFDF;}
 .contentcomments_comment.last .contentcomments_avatar {margin-top: 15px;}
-#contentcomments_mainContainer textarea,#contentcomments_settings textarea{margin:2px 0;width:88%;border:#DFDFDF solid 1px;resize:none;height:75px;float:right;padding:5px;}
+#contentcomments_mainContainer textarea,#contentcomments_settings textarea{width:88%;resize:none;height:75px;float:right;}
 #contentcomments_mainContainer textarea::-webkit-input-placeholder {font-style:italic;}
 #contentcomments_mainContainer textarea:-moz-placeholder {font-style: italic;}
 #contentcomments_settings textarea{height:140px;}
