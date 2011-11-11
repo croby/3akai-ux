@@ -562,7 +562,12 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
 
         var addBinding = function() {
             var validateOpts = {
-                submitHandler: postComment
+                submitHandler: postComment,
+                messages: {
+                    contentcomments_txtMessage: {
+                        required: sakai.api.i18n.getValueForKey("PLEASE_ENTER_MESSAGE", "contentcomments")
+                    }
+                }
             };
             sakai.api.Util.Forms.validate($(".contentcomments_fillInCommentTopContainer form", rootel), validateOpts, true);
         };

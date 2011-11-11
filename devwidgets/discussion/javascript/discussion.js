@@ -571,7 +571,6 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.cookie"], func
         };
 
         var saveEdit = function(form) {
-            debug.log("saveEdit");
             var editParent = $(form);
             var id = $(form).parents(s3dHighlightBackgroundClass).attr("id");
             var body = $.trim(editParent.find(discussionTopicReplyText).val());
@@ -777,7 +776,6 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.cookie"], func
 
             // Open quoted reply fields
             $(discussionQuote, $rootel).live("click", function(e){
-                debug.log(e.target);
                 var replyParent = $(this).parents(discussionTopicContainer);
                 replyParent.find(discussionReplyTopicBottom).hide();
                 var postId = replyParent.attr("id").split("discussion_post_")[1];
