@@ -638,6 +638,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
 
             /** Bind the insert comment button*/
             $(commentsCommentBtn, rootel).bind("click", function(e, ui){
+                sakai.api.Util.Forms.clearValidation($("#comments_fillInComment form"));
                 // checks if the user is loggedIn
                 var isLoggedIn = (me.user.anon && me.user.anon === true) ? false : true;
                 var txtToFocus = commentsMessageTxt;
