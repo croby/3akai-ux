@@ -34,7 +34,8 @@ define(
         "misc/trimpath.template",
         "misc/underscore",
         "jquery-plugins/jquery.ba-bbq",
-        "jquery-plugins/jquery.validate"
+        "jquery-plugins/jquery.validate",
+        "jquery-ui"
     ],
     function($, sakai_serv, sakai_l10n, sakai_conf) {
 
@@ -1830,6 +1831,18 @@ define(
             return entity;
         },
 
+        getTranslatedCategories: function() {
+            var ret = [];
+            var directory = sakai_util.getDirectoryStructure();
+            $.each(directory, function(i,dir) {
+                ret.push({label: dir.data.title, id: dir.attr.id, parent: true});
+                $.each(dir.children, function(i,child) {
+                    ret.push({label: child.data.title, id: dir.attr.id+"/"+child.attr.id, parent: false});
+                });
+            });
+            return ret;
+        },
+
         AutoSuggest: {
             /**
             * Autosuggest for users and groups (for other data override the source parameter). setup method creates a new
@@ -1933,7 +1946,84 @@ define(
                 var ascontainer = $("#as-selections-" + element.attr("id")).replaceWith(element.data(namespace));
                 $("#as-results-" + element.attr("id")).remove();
                 return $(ascontainer);
+            },
+
+            setupTagAndCategoryAutosuggest: function($elt, options, categoriesSelectedCallback) {
+                var split = function ( val ) {
+                    return val.split( /,\s*/ );
+                };
+                var extractLast = function( term ) {
+                    return split( term ).pop();
+                };
+                var translatedCategories = sakai_util.getTranslatedCategories(),
+                    categoriesSelected = [];
+                var getCategoriesAndTags = function() {
+                    var ret = { categories: [], tags: [] };
+                    var catTitles = [];
+                    var vals = split( $elt.val() );
+                    $.each(categoriesSelected, function( i, cat ) {
+                        ret.categories.push( cat.id );
+                        catTitles.push( cat.title );
+                    });
+                    $.each(vals, function( i, elt ) {
+                        if ( $.inArray( catTitles, elt.title ) === -1 ) {
+                            ret.tags.push(elt);
+                        }
+                    });
+                    return ret;
+                };
+                $elt.autocomplete({
+                    source: function( request, response ) {
+                        var catetoriesToSearch = [];
+                        // Don't suggest categories already selected
+                        if ($.trim(request.term).length) {
+                            var currentTerms = split( request.term );
+                            $.each(translatedCategories, function(i, cat) {
+                                if ($.inArray(cat.label, currentTerms) === -1) {
+                                    catetoriesToSearch.push(cat);
+                                }
+                            });
+                        } else {
+                            catetoriesToSearch = translatedCategories;
+                        }
+                        response($.ui.autocomplete.filter(catetoriesToSearch, extractLast(request.term)));
+                    },
+                    search: function() {
+                        // custom minLength
+                        var term = extractLast( this.value );
+                        if ( term.length < 2 ) {
+                            return false;
+                        }
+                    },
+                    focus: function(event, ui) {
+                        return false;
+                    },
+                    select: function( event, ui, autcomp) {
+                        var terms = split( this.value );
+                        terms.pop();
+                        terms.push( ui.item.value );
+                        terms.push( "" );
+                        this.value = terms.join( ", " );
+                        categoriesSelected.push(ui.item);
+                        return false;
+                    }
+                })
+                .data('autocomplete')._renderItem = function( ul, item ) {
+                    var match = new RegExp("("+extractLast(this.term)+")", "gi");
+                    var label = item.label.replace(match, "<strong>$1</strong>");
+                    var $li = $( "<li></li>" );
+                    if (!item.parent) {
+                        $li.addClass("s3d-autocomplete-child");
+                    }
+                    return $li
+                        .data( "item.autocomplete", item )
+                        .append( '<a>' + label + '</a>' )
+                        .appendTo( ul );
+                };
+                return getCategoriesAndTags;
             }
+
+
         },
 
         Forms : {

@@ -3,9 +3,11 @@ Our custom build includes:
 Core
 Widget
 Mouse
+Position
 Draggable
 Droppable
 Sortable
+Autocomplete
 Effects Core
 Effect "Pulsate"
 

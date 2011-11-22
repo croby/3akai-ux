@@ -355,7 +355,10 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         };
         // Initialize the validate plug-in
         sakai.api.Util.Forms.validate($newcreategroupGroupForm, validateOpts, true);
-
+        var cats = sakai.api.Util.AutoSuggest.setupTagAndCategoryAutosuggest($newcreategroupGroupTags);
+        setInterval(function() {
+            debug.log(cats());
+        }, 1000);
         $newcreategroupGroupTitle.bind("keyup", function(){
             var suggestedURL = sakai.api.Util.makeSafeURL($(this).val().toLowerCase(), "-");
             $newcreategroupSuggestedURL.val(suggestedURL);
