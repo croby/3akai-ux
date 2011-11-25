@@ -277,9 +277,9 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             $.each(wData.items, function(i,val) {
                 autosuggestSelectionAdded(val);
                 if (val.value) {
-                    $embedcontent_content_input.autoSuggest.add_selected_item(val, val.value);
+                    $embedcontent_content_input.autoSuggest( "add_selected_item", val, val.value);
                 } else {
-                    $embedcontent_content_input.autoSuggest.add_selected_item({name:$embedcontent_item_unavailable_text.text(), value:"notfound"+Math.ceil(Math.random() * 9999)}, "notfound");
+                    $embedcontent_content_input.autoSuggest( "add_selected_item", {name:$embedcontent_item_unavailable_text.text(), value:"notfound"+Math.ceil(Math.random() * 9999)}, "notfound");
                 }
             });
             $(".as-original input.as-input").val('').focus();
@@ -331,7 +331,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             $.each(files, function(i,val) {
                 var newObj = createDataObject(val, val["_path"]);
                 autosuggestSelectionAdded(newObj);
-                $embedcontent_content_input.autoSuggest.add_selected_item(newObj, newObj.value);
+                $embedcontent_content_input.autoSuggest( "add_selected_item", newObj, newObj.value);
             });
             $("input[id='" + tuid + "']").val('').focus();
         };
@@ -347,7 +347,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                  success: function(data) {
                      var newObj = createDataObject(data, val.url.split("/p/")[1]);
                      autosuggestSelectionAdded(newObj);
-                     $embedcontent_content_input.autoSuggest.add_selected_item(newObj, newObj.value);
+                     $embedcontent_content_input.autoSuggest( "add_selected_item", newObj, newObj.value);
                  }
               });
           });

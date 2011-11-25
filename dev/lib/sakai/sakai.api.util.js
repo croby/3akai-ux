@@ -1882,14 +1882,24 @@ define(
                     sakai_serv.loadJSON(searchUrl.replace(".json", ""), function(success, data){
                         if (success) {
                             var suggestions = [];
-                            $.each(data.results, function(i) {
-                                if (data.results[i]["rep:userId"] && data.results[i]["rep:userId"] !== user.data.me.user.userid) {
-                                    if(!options.filterUsersGroups || $.inArray(data.results[i]["rep:userId"],options.filterUsersGroups)===-1){
-                                        suggestions.push({"value": data.results[i]["rep:userId"], "name": user.getDisplayName(data.results[i]), "picture": sakai_util.constructProfilePicture(data.results[i], "user"), "type": "user"});
+                            $.each( data.results, function( i ) {
+                                if ( data.results[i]["rep:userId"] && data.results[i]["rep:userId"] !== user.data.me.user.userid ) {
+                                    if ( !options.filterUsersGroups || $.inArray( data.results[i]["rep:userId"], options.filterUsersGroups ) ===-1 ) {
+                                        suggestions.push({
+                                            "value": data.results[i]["rep:userId"],
+                                            "name": user.getDisplayName(data.results[i]),
+                                            "picture": sakai_util.constructProfilePicture(data.results[i], "user"),
+                                            "type": "user"
+                                        });
                                     }
                                 } else if (data.results[i]["sakai:group-id"]) {
-                                    if(!options.filterUsersGroups || $.inArray(data.results[i]["sakai:group-id"],options.filterUsersGroups)===-1){
-                                        suggestions.push({"value": data.results[i]["sakai:group-id"], "name": sakai_util.Security.safeOutput(data.results[i]["sakai:group-title"]), "picture": sakai_util.constructProfilePicture(data.results[i], "group"), "type": "group"});
+                                    if ( !options.filterUsersGroups || $.inArray( data.results[i]["sakai:group-id"], options.filterUsersGroups ) ===-1 ) {
+                                        suggestions.push({
+                                            "value": data.results[i]["sakai:group-id"],
+                                            "name": sakai_util.Security.safeOutput(data.results[i]["sakai:group-title"]),
+                                            "picture": sakai_util.constructProfilePicture(data.results[i], "group"),
+                                            "type": "group"
+                                        });
                                     }
                                 }
                             });
@@ -1903,7 +1913,7 @@ define(
                     startText: sakaii18nAPI.getValueForKey("ENTER_NAME_HERE"),
                     emptyText: sakaii18nAPI.getValueForKey("NO_RESULTS_FOUND"),
                     limitText: sakaii18nAPI.getValueForKey("NO_MORE_SELECTIONS_ALLOWED"),
-                    scrollresults: true,
+                    scroll: true,
                     canGenerateNewSelections: false,
                     usePlaceholder: true
                 };
@@ -1915,13 +1925,14 @@ define(
                 if ( element.data( namespace ) ) { // already an autosuggest so for now return element, could also call destroy and setup again
                     return element;
                 }
+
                 var orig_element = element.clone( true );
                 element.autoSuggest( dataFn, opts ).data( namespace, orig_element );
 
                 if ( $.isFunction( callback ) ) {
                     callback();
                 }
-                
+
                 return element;
             },
             /**
@@ -1965,19 +1976,35 @@ define(
                 return $(ascontainer);
             },
 
-            setupTagAndCategoryAutosuggest: function($elt, options, callback) {
+            setupTagAndCategoryAutosuggest: function( $elt, options, callback ) {
                 var data = sakai_util.getTranslatedCategories();
-                var sakaii18nAPI = require("sakai/sakai.api.i18n");
+                var sakaii18nAPI = require( "sakai/sakai.api.i18n" );
                 var defaults = {
                     selectedItemProp: "value",
                     searchObjProps: "value",
                     canGenerateNewSelections: true,
                     scroll: true,
                     showResultListWhenNoMatch: false,
-                    startText: sakaii18nAPI.getValueForKey("ENTER_TAGS_OR_CATEGORIES"),
+                    startText: sakaii18nAPI.getValueForKey( "ENTER_TAGS_OR_CATEGORIES" )
                 };
-                $.extend(defaults, options);
-                sakai_util.AutoSuggest.setup($elt, defaults, callback, data);
+                $.extend( defaults, options );
+                sakai_util.AutoSuggest.setup( $elt, defaults, callback, data );
+            },
+
+            getTagsAndCategories: function( $elt ) {
+                var tags_cats = $elt.autoSuggest( "get_selections" );
+                var ret = {
+                    categories: [],
+                    tags: []
+                };
+                $.each(tags_cats, function(i, tc) {
+                    if (tc.category) {
+                        ret.categories.push(tc.id);
+                    } else {
+                        ret.tags.push(tc.value);
+                    }
+                });
+                return ret;
             }
 
         },

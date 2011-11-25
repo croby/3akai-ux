@@ -115,11 +115,17 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
      * Create a simple group and execute the tagging and membership functions
      */
     var doCreateSimpleGroup = function(){
+        // var tags_cats = sakai.api.Util.AutoSuggest.getTagsAndCategories($newcreategroupGroupTags);
+        // var grouptags = tags_cats.tags;
+        // var groupcategories = tags_cats.categories;
+        // debug.log(groupcategories, grouptags);
+        // return;
         $newcreategroupCreating.jqmShow();
         var grouptitle = $newcreategroupGroupTitle.val() || "";
         var groupdescription = $newcreategroupGroupDescription.val() || "";
         var groupid = sakai.api.Util.makeSafeURL($newcreategroupSuggestedURL.val(), "-");
         var grouptags = $newcreategroupGroupTags.val().split(",");
+
         sakai.api.Groups.createGroup(groupid, grouptitle, groupdescription, sakai.data.me, currentTemplate, widgetData.category, function(success, groupData, nameTaken){
             if (success) {
                 // Tag group
