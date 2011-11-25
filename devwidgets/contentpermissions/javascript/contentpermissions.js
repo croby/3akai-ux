@@ -15,17 +15,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-/*
- * Dependencies
- *
- * /dev/lib/jquery/plugins/jquery.json.js (toJSON)
- * /dev/lib/jquery/plugins/jqmodal.sakai-edited.js
- * /dev/lib/misc/trimpath.template.js (TrimpathTemplates)
- * /dev/lib/jquery/plugins/jquery.autoSuggest.sakai-edited.js (autoSuggest)
- */
-/*global $ */
 
-// Namespaces
 require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"], function($, sakai){
 
     /**

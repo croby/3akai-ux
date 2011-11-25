@@ -1834,10 +1834,20 @@ define(
         getTranslatedCategories: function() {
             var ret = [];
             var directory = sakai_util.getDirectoryStructure();
-            $.each(directory, function(i,dir) {
-                ret.push({label: dir.data.title, id: dir.attr.id, parent: true});
-                $.each(dir.children, function(i,child) {
-                    ret.push({label: child.data.title, id: dir.attr.id+"/"+child.attr.id, parent: false});
+            $.each( directory, function( i, dir ) {
+                ret.push({
+                    value: dir.data.title,
+                    id: dir.attr.id,
+                    parent: true,
+                    category: true
+                });
+                $.each( dir.children, function( i, child ) {
+                    ret.push({
+                        value: dir.data.title + " » " + child.data.title,
+                        id: dir.attr.id + "/" + child.attr.id,
+                        parent: false,
+                        category: true
+                    });
                 });
             });
             return ret;
@@ -1856,52 +1866,59 @@ define(
             *
             * @returns {Object} new jQuery object with autosuggest
             */        
-            setup: function(element,options,callback){
+            setup: function( element, options, callback, _dataFn ) {
+                // Translate the jquery.autosuggest plugin
+                var sakaii18nAPI = require("sakai/sakai.api.i18n");
+                var dataFn = _dataFn || function( query, add ) {
+                    var user = require("sakai/sakai.api.user");
+                    var q = sakai_serv.createSearchString(query);
+                    var searchoptions = {"page": 0, "items": 15};
+                    var searchUrl = sakai_conf.URL.SEARCH_USERS_GROUPS;
+                    if (q === '*' || q === '**') {
+                        searchUrl = sakai_conf.URL.SEARCH_USERS_GROUPS_ALL;
+                    } else {
+                        searchoptions['q'] = q;
+                    }
+                    sakai_serv.loadJSON(searchUrl.replace(".json", ""), function(success, data){
+                        if (success) {
+                            var suggestions = [];
+                            $.each(data.results, function(i) {
+                                if (data.results[i]["rep:userId"] && data.results[i]["rep:userId"] !== user.data.me.user.userid) {
+                                    if(!options.filterUsersGroups || $.inArray(data.results[i]["rep:userId"],options.filterUsersGroups)===-1){
+                                        suggestions.push({"value": data.results[i]["rep:userId"], "name": user.getDisplayName(data.results[i]), "picture": sakai_util.constructProfilePicture(data.results[i], "user"), "type": "user"});
+                                    }
+                                } else if (data.results[i]["sakai:group-id"]) {
+                                    if(!options.filterUsersGroups || $.inArray(data.results[i]["sakai:group-id"],options.filterUsersGroups)===-1){
+                                        suggestions.push({"value": data.results[i]["sakai:group-id"], "name": sakai_util.Security.safeOutput(data.results[i]["sakai:group-title"]), "picture": sakai_util.constructProfilePicture(data.results[i], "group"), "type": "group"});
+                                    }
+                                }
+                            });
+                            add( suggestions, query );
+                        }
+                    }, searchoptions);
+                };
                 var defaults = {
                     selectedItemProp: "name",
                     searchObjProps: "name",
-                    startText: "Enter name here",
-                    scrollresults:true,
-                    source: function(query, add) {
-                        var user = require("sakai/sakai.api.user");
-                        var q = sakai_serv.createSearchString(query);
-                        var searchoptions = {"page": 0, "items": 15};
-                        var searchUrl = sakai_conf.URL.SEARCH_USERS_GROUPS;
-                        if (q === '*' || q === '**') {
-                            searchUrl = sakai_conf.URL.SEARCH_USERS_GROUPS_ALL;
-                        } else {
-                            searchoptions['q'] = q;
-                        }
-                        sakai_serv.loadJSON(searchUrl.replace(".json", ""), function(success, data){
-                            if (success) {
-                                var suggestions = [];
-                                $.each(data.results, function(i) {
-                                    if (data.results[i]["rep:userId"] && data.results[i]["rep:userId"] !== user.data.me.user.userid) {
-                                        if(!options.filterUsersGroups || $.inArray(data.results[i]["rep:userId"],options.filterUsersGroups)===-1){
-                                            suggestions.push({"value": data.results[i]["rep:userId"], "name": user.getDisplayName(data.results[i]), "picture": sakai_util.constructProfilePicture(data.results[i], "user"), "type": "user"});
-                                    	}
-                                    } else if (data.results[i]["sakai:group-id"]) {
-                                        if(!options.filterUsersGroups || $.inArray(data.results[i]["sakai:group-id"],options.filterUsersGroups)===-1){
-                                            suggestions.push({"value": data.results[i]["sakai:group-id"], "name": sakai_util.Security.safeOutput(data.results[i]["sakai:group-title"]), "picture": sakai_util.constructProfilePicture(data.results[i], "group"), "type": "group"});
-                                        }
-                                    }
-                                });
-                                add(suggestions);
-                            }
-                        }, searchoptions);
-                    }
+                    startText: sakaii18nAPI.getValueForKey("ENTER_NAME_HERE"),
+                    emptyText: sakaii18nAPI.getValueForKey("NO_RESULTS_FOUND"),
+                    limitText: sakaii18nAPI.getValueForKey("NO_MORE_SELECTIONS_ALLOWED"),
+                    scrollresults: true,
+                    canGenerateNewSelections: false,
+                    usePlaceholder: true
                 };
-                var opts = $.extend(defaults, options);
+
+                var opts = $.extend( defaults, options );
                 var namespace = opts.namespace || "api_util_autosuggest";
-                element = (element instanceof jQuery) ? element:$(element);
-                
-                if(element.data(namespace)){//already an autosuggest so for now return element, could also call destroy and setup again
+                element = ( element instanceof jQuery ) ? element : $( element );
+
+                if ( element.data( namespace ) ) { // already an autosuggest so for now return element, could also call destroy and setup again
                     return element;
                 }
-                var orig_element = element.clone(true);
-                element.autoSuggest("", opts).data(namespace,orig_element);
-                
-                if ($.isFunction(callback)) {
+                var orig_element = element.clone( true );
+                element.autoSuggest( dataFn, opts ).data( namespace, orig_element );
+
+                if ( $.isFunction( callback ) ) {
                     callback();
                 }
                 
@@ -1922,7 +1939,7 @@ define(
             reset: function(element){
                 element = (element instanceof jQuery) ? element:$(element);
                 element.val("").trigger("keydown");
-                $(".as-close").click(); //created by autosuggest plugin
+                $(".as-close").click(); // created by autosuggest plugin
                 return element;
             },
             /**
@@ -1941,88 +1958,27 @@ define(
                 var opts = $.extend({}, options);
                 var namespace = opts.namespace || "api_util_autosuggest";
                 if(!element || (element.length!==1 && !element.data(namespace)) ){
-                	return false; //may want to return element?
-                } 
+                    return false; // may want to return element?
+                }
                 var ascontainer = $("#as-selections-" + element.attr("id")).replaceWith(element.data(namespace));
                 $("#as-results-" + element.attr("id")).remove();
                 return $(ascontainer);
             },
 
-            setupTagAndCategoryAutosuggest: function($elt, options, categoriesSelectedCallback) {
-                var split = function ( val ) {
-                    return val.split( /,\s*/ );
+            setupTagAndCategoryAutosuggest: function($elt, options, callback) {
+                var data = sakai_util.getTranslatedCategories();
+                var sakaii18nAPI = require("sakai/sakai.api.i18n");
+                var defaults = {
+                    selectedItemProp: "value",
+                    searchObjProps: "value",
+                    canGenerateNewSelections: true,
+                    scroll: true,
+                    showResultListWhenNoMatch: false,
+                    startText: sakaii18nAPI.getValueForKey("ENTER_TAGS_OR_CATEGORIES"),
                 };
-                var extractLast = function( term ) {
-                    return split( term ).pop();
-                };
-                var translatedCategories = sakai_util.getTranslatedCategories(),
-                    categoriesSelected = [];
-                var getCategoriesAndTags = function() {
-                    var ret = { categories: [], tags: [] };
-                    var catTitles = [];
-                    var vals = split( $elt.val() );
-                    $.each(categoriesSelected, function( i, cat ) {
-                        ret.categories.push( cat.id );
-                        catTitles.push( cat.title );
-                    });
-                    $.each(vals, function( i, elt ) {
-                        if ( $.inArray( catTitles, elt.title ) === -1 ) {
-                            ret.tags.push(elt);
-                        }
-                    });
-                    return ret;
-                };
-                $elt.autocomplete({
-                    source: function( request, response ) {
-                        var catetoriesToSearch = [];
-                        // Don't suggest categories already selected
-                        if ($.trim(request.term).length) {
-                            var currentTerms = split( request.term );
-                            $.each(translatedCategories, function(i, cat) {
-                                if ($.inArray(cat.label, currentTerms) === -1) {
-                                    catetoriesToSearch.push(cat);
-                                }
-                            });
-                        } else {
-                            catetoriesToSearch = translatedCategories;
-                        }
-                        response($.ui.autocomplete.filter(catetoriesToSearch, extractLast(request.term)));
-                    },
-                    search: function() {
-                        // custom minLength
-                        var term = extractLast( this.value );
-                        if ( term.length < 2 ) {
-                            return false;
-                        }
-                    },
-                    focus: function(event, ui) {
-                        return false;
-                    },
-                    select: function( event, ui, autcomp) {
-                        var terms = split( this.value );
-                        terms.pop();
-                        terms.push( ui.item.value );
-                        terms.push( "" );
-                        this.value = terms.join( ", " );
-                        categoriesSelected.push(ui.item);
-                        return false;
-                    }
-                })
-                .data('autocomplete')._renderItem = function( ul, item ) {
-                    var match = new RegExp("("+extractLast(this.term)+")", "gi");
-                    var label = item.label.replace(match, "<strong>$1</strong>");
-                    var $li = $( "<li></li>" );
-                    if (!item.parent) {
-                        $li.addClass("s3d-autocomplete-child");
-                    }
-                    return $li
-                        .data( "item.autocomplete", item )
-                        .append( '<a>' + label + '</a>' )
-                        .appendTo( ul );
-                };
-                return getCategoriesAndTags;
+                $.extend(defaults, options);
+                sakai_util.AutoSuggest.setup($elt, defaults, callback, data);
             }
-
 
         },
 
