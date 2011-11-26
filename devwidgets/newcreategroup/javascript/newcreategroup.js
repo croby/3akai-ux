@@ -115,11 +115,6 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
      * Create a simple group and execute the tagging and membership functions
      */
     var doCreateSimpleGroup = function(){
-        // var tags_cats = sakai.api.Util.AutoSuggest.getTagsAndCategories($newcreategroupGroupTags);
-        // var grouptags = tags_cats.tags;
-        // var groupcategories = tags_cats.categories;
-        // debug.log(groupcategories, grouptags);
-        // return;
         $newcreategroupCreating.jqmShow();
         var grouptitle = $newcreategroupGroupTitle.val() || "";
         var groupdescription = $newcreategroupGroupDescription.val() || "";

@@ -36,14 +36,14 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
      * @param {Boolean} showSettings Show the settings of the widget or not
      */
     sakai_global.newprofilesection = function( tuid, showSettings, widgetData ) {
-        debug.log(widgetData);
         /////////////////////////////
         // Configuration variables //
         /////////////////////////////
 
         var editing = false,
             userid = false,
-            multiple = false;
+            multiple = false,
+            multipleSectionLength = 0;
 
         ///////////////////
         // CSS Selectors //
@@ -58,38 +58,37 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             $newprofilesection_view_template = $( "#newprofilesection_view_template", $rootel ),
             $newprofilesection_edit_template = $( "#newprofilesection_edit_template", $rootel ),
             $newprofilesection_edit_multiple_template = $( "#newprofilesection_edit_multiple_template", $rootel ),
+            $newprofilesection_view_multiple_template = $( "#newprofilesection_view_multiple_template" , $rootel ),
+            $newprofilesection_view_no_results_template = $( "#newprofilesection_view_no_results_template", $rootel ),
             $newprofilesection_sections_multiple = false,
             $newprofilesection_add_button = false,
             $form = false;
 
+        // Transform the form values from a multiple-assign section into a different data structure
         var getMultipleValues = function( values ) {
             var uniqueContainers = $( "div.newprofilesection_multiple_section" );
             var multipleValues = {};
-            $.each(uniqueContainers, function( i, elt ) {
+            $.each( uniqueContainers, function( i, elt ) {
                 multipleValues[ $( elt ).attr( "id" ).replace( "form_group_", "" ) ] = {
                     order: i
                 };
             });
-            $.each(values, function( i, val ) {
+            $.each( values, function( i, val ) {
                 // Each ID is of format fieldtitle_formuniqueid
-                var field = i.substring(0,i.lastIndexOf("_"));
-                var mvKey = i.substring(i.lastIndexOf("_")+1);
-                multipleValues[mvKey][field] = val;
+                var field = i.substring( 0, i.lastIndexOf( "_" ));
+                var mvKey = i.substring( i.lastIndexOf( "_" ) + 1 );
+                multipleValues[ mvKey ][ field ] = val;
             });
             values = multipleValues;
             return values;
         };
 
         var saveValues = function() {
-            var values = $form.serializeObject(false);
+            var values = $form.serializeObject( false );
             if ( multiple ) {
                 values = getMultipleValues( values );
             }
-
-            debug.log(values);
-
             // Get tags & Categories if they're in this form
-            // save data
             sakai.api.User.updateUserProfile(userid, widgetData.sectionid, values, multiple, function(success, data) {
                 if (success) {
                     // TODO Show save notification
@@ -107,31 +106,69 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             debug.log("handleShown", showing, widgetData.sectionid);
         };
 
+        // Remove a section from the a multi-assign section
         var removeSection = function( unique ) {
             $( "div#form_group_" + unique ).remove();
-            // TODO Save removal of this section 
+            sakai.api.User.deleteUserProfileSection( userid, widgetData.sectionid, unique, function() {
+                debug.log("removed");
+            });
+            debug.log($( "div.newprofilesection_multiple_section" ).length );
             if ( $( "div.newprofilesection_multiple_section" ).length === 0 ) {
-                $( "button.profile-section-save-button", $rootel ).show();
-            } 
+                $( "button.profile-section-save-button", $rootel ).hide();
+            }
         };
 
+        // Add a new section to a multi-assign section
         var addEmptySection = function( section, template ) {
-            var unique = "" + Math.round(Math.random() * 1000000000);
+            var unique = "" + Math.round( Math.random() * 1000000000 );
+            multipleSectionLength++;
             var sectionHTML = sakai.api.Util.TemplateRenderer( template, {
                 sectionid: widgetData.sectionid,
                 section: section,
-                unique: unique
+                unique: unique,
+                order: multipleSectionLength
             });
             $newprofilesection_sections_multiple.append( sakai.api.i18n.General.process( sectionHTML ) );
             $( "button.profile-section-save-button", $rootel ).show();
-            $( "button#newprofilesection_remove_link_" + unique, $rootel).bind("click", function() {
-                removeSection(unique);
+            $( "button#newprofilesection_remove_link_" + unique, $rootel ).bind( "click", function() {
+                removeSection( unique );
             });
         };
 
-        var renderMultiForm = function ( template, section, data ) {
+        var sectionHasElements = function( section ) {
+            var empty = false;
+            $.each( section, function( i, elt ) {
+                if ( $.isPlainObject( elt ) ) {
+                    empty = true;
+                }
+            });
+            return empty;
+        };
+
+        var renderEmptySection = function( userProfile, section ) {
+            debug.log("renderEmptySection", userProfile);
+            var sectionKey = "THIS_PERSON_HASNT_ADDED_" + widgetData.sectionid.toUpperCase();
+            var messageKey = "";
+            if (sakai.api.i18n.getValueForKey( sectionKey, "newprofilesection") !== sectionKey ) {
+                messageKey = sectionKey;
+            }
+            var emptyHTML = sakai.api.Util.TemplateRenderer( $newprofilesection_view_no_results_template, {
+                userid: userid,
+                displayName: sakai.api.User.getDisplayName( userProfile ),
+                section: section.label
+            });
+            if ( messageKey ) {
+                
+            }
+            $newprofilesection_body.html( sakai.api.i18n.General.process( emptyHTML ) );
+        };
+
+        // Render a multi-assign section
+        var renderMultiSection = function ( template, section, data ) {
             multiple = true;
-            var multHTML = sakai.api.Util.TemplateRenderer( $newprofilesection_edit_multiple_template, {
+            var multiTemplate = editing ? $newprofilesection_edit_multiple_template : $newprofilesection_view_multiple_template;
+
+            var multHTML = sakai.api.Util.TemplateRenderer( multiTemplate, {
                 sectionid: widgetData.sectionid,
                 section: section
             });
@@ -139,18 +176,57 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             
             // Grab the new container to render into
             $newprofilesection_sections_multiple = $( "#newprofilesection_sections_" + widgetData.sectionid );
-            $newprofilesection_add_button = $( "#newprofilesection_add_" + widgetData.sectionid );
-            $newprofilesection_add_button.bind("click", function() {
-                addEmptySection( section, template );
-            });
+            if ( editing ) {
+                $newprofilesection_add_button = $( "#newprofilesection_add_" + widgetData.sectionid );
+                $newprofilesection_add_button.bind("click", function() {
+                    addEmptySection( section, template );
+                });
+            }
 
-            if (data[ widgetData.sectionid ].elements) {
-                debug.log("data", data[ widgetData.sectionid ]);
-                $.each( data[ widgetData.sectionid ].elements, function(uid, sectionData) {
-                    
-                })
-                // render the sections
-                // $("button.profile-section-save-button", $rootel).show();
+            // If there is some data, render each section
+            if ( data[ widgetData.sectionid ].elements ) {
+                var subSections = [];
+                // Convert the sectionData into an array so we can order it
+                $.each( data[ widgetData.sectionid ].elements, function( uid, sectionData ) {
+                    if ( $.isPlainObject( sectionData ) ) {
+                        var obj = {};
+                        obj[ uid ] = sectionData;
+                        subSections.push( obj );
+                    }
+                });
+                // Sort the sections by order
+                subSections = subSections.sort( function ( a, b ) {
+                    return _.values( a )[ 0 ].order - _.values( b )[ 0 ].order;
+                });
+                $.each( subSections, function( i, sectionData ) {
+                    if ( $.isPlainObject( sectionData ) ) {
+                        // Just keep incrementing, since we're not supporting re-ordering yet
+                        multipleSectionLength = _.values( sectionData )[ 0 ].order > multipleSectionLength ? _.values( sectionData )[ 0 ].order : multipleSectionLength;
+                        var uid = _.keys( sectionData )[ 0 ];
+                        debug.log(section);
+                        var sectionHTML = sakai.api.Util.TemplateRenderer( template, {
+                            section: section,
+                            unique: uid,
+                            data: _.values( sectionData )[ 0 ],
+                            order: _.values( sectionData )[ 0 ].order
+                        });
+                        $newprofilesection_sections_multiple.append( sakai.api.i18n.General.process( sectionHTML ) );
+                        if ( editing ) {
+                            $( "button#newprofilesection_remove_link_" + uid, $rootel ).bind( "click", function() {
+                                removeSection( uid );
+                            });
+                        }
+                    }
+                });
+                if ( editing && subSections.length ) {
+                    $( "button.profile-section-save-button", $rootel ).show();
+                } else if ( !subSections.length ) {
+                    renderEmptySection( data );
+                } else if ( !editing ){
+                    $( ".newprofilesection_multiple_sections hr:last" ).hide();
+                }
+            } else {
+                renderEmptySection( data );
             }
         };
 
@@ -162,62 +238,69 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                     template = $newprofilesection_edit_template;
                 }
 
-                debug.log(section);
                 // Render header
-                var headerHTML = sakai.api.Util.TemplateRenderer($newprofilesection_header_template, {
+                var headerHTML = sakai.api.Util.TemplateRenderer( $newprofilesection_header_template, {
                     section: section
                 });
                 $newprofilesection_header.html( sakai.api.i18n.General.process( headerHTML ) );
 
                 // If it is a multiple section, we have to render it with some love
                 if ( section.multiple ) {
-                    renderMultiForm( template, section, data );
+                    renderMultiSection( template, section, data );
                 } else {
-                    var bodyHTML = sakai.api.Util.TemplateRenderer( template, {
-                        sectionid: widgetData.sectionid,
-                        section: section,
-                        data: data[widgetData.sectionid].elements,
-                        unique: false
-                    });
-                    $newprofilesection_body.html( sakai.api.i18n.General.process( bodyHTML ) );
+                    if ( sectionHasElements( data[ widgetData.sectionid ].elements ) ) {
+                        var bodyHTML = sakai.api.Util.TemplateRenderer( template, {
+                            sectionid: widgetData.sectionid,
+                            section: section,
+                            data: data[ widgetData.sectionid ].elements,
+                            unique: false,
+                            sakai: sakai
+                        });
+                        $newprofilesection_body.html( sakai.api.i18n.General.process( bodyHTML ) );
+                    } else {
+                        renderEmptySection( data, section );
+                    }
+
                 }
 
                 if (editing) {
-                    $form = $("#newprofilesection_form_" + widgetData.sectionid, $rootel);
+                    $form = $( "#newprofilesection_form_" + widgetData.sectionid, $rootel );
                     var validateOpts = {
                         submitHandler: saveValues,
                         messages: {}
                     };
                     // Set the custom error messages per field
-                    $.each(section.elements, function( i, elt ) {
-                        if (elt.errorMessage) {
+                    $.each( section.elements, function( i, elt ) {
+                        if ( elt.errorMessage ) {
                             validateOpts.messages[ i ] = {
-                                required: sakai.api.i18n.General.process(elt.errorMessage)
+                                required: sakai.api.i18n.General.process( elt.errorMessage )
                             };
                         }
                     });
-                    sakai.api.Util.Forms.validate($form, validateOpts);
+                    sakai.api.Util.Forms.validate( $form, validateOpts );
                 }
             }
         };
 
         var getData = function( callback ) {
-            sakai.api.User.getUser( userid, function( success, data ) {
-                if ( $.isFunction( callback ) ) {
-                    callback( success, data );
-                }
-                debug.log(data);
-            });
+            if ( editing && sakai.data.me.profile && $.isFunction( callback ) ) {
+                callback( true, sakai.data.me.profile );
+            } else {
+                sakai.api.User.getUser( userid, function( success, data ) {
+                    if ( $.isFunction( callback ) ) {
+                        callback( success, data );
+                    }
+                });
+            }
         };
 
         var init = function() {
-            debug.log("init");
+            $(window).bind(tuid + ".shown.sakai", handleShown);
             userid = sakai_global.profile.main.data.userid;
             editing = userid && userid === sakai.data.me.user.userid;
             getData(renderSection);
         };
 
-        $(window).bind(tuid + ".shown.sakai", handleShown);
         init();
     };
 

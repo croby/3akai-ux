@@ -147,7 +147,23 @@ define(
                 }
 
             });
-            sakai_serv.saveJSON(url, postData, callback, multiple);
+            sakai_serv.saveJSON(url, postData, callback, true);
+        },
+
+        deleteUserProfileSection: function( userid, section, subsection, callback ) {
+            var url = "/~" + userid + "/public/authprofile/" + section + "/elements/" + subsection + ".json";
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    ":operation": "delete"
+                },
+                success: function( data ) {
+                    if ( $.isFunction( callback ) ) {
+                        callback( data );
+                    }
+                }
+            });
         },
 
         /**

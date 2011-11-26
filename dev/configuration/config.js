@@ -378,26 +378,6 @@ define(function(){
                             }
                         }
                     },
-                    "locations": {
-                        "label": "__MSG__PROFILE_LOCATIONS_LABEL__",
-                        "required": false,
-                        "display": true,
-                        "access": "everybody",
-                        "modifyacl": true,
-                        "permission": "anonymous",
-                        "multiple": true,
-                        "directory": true,
-                        "multipleLabel": "__MSG__PROFILE_LOCATION_LABEL__",
-                        "order": 2,
-                        "elements": {
-                            "locationtitle": {
-                                "label": "__MSG__PROFILE_LOCATION_LABEL__",
-                                "required": true,
-                                "display": true,
-                                "type": "location"
-                            }
-                        }
-                    },
                     "publications": {
                         "label": "__MSG__PROFILE_PUBLICATIONS_LABEL__",
                         "required": false,
@@ -407,7 +387,7 @@ define(function(){
                         "permission": "anonymous",
                         "multiple": true,
                         "multipleLabel": "__MSG__PROFILE_PUBLICATION_LABEL__",
-                        "order": 3,
+                        "order": 2,
                         //"template": "profile_section_publications_template",
                         "elements": {
                             "maintitle": {

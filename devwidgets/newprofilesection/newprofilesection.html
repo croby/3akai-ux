@@ -39,6 +39,7 @@
     <form id="newprofilesection_form_${sectionid}">
     {else}
     <div id="${form_group}" class="newprofilesection_multiple_section">
+    <input type="hidden" name="order_${unique}" value="${order}" />
     {/if}
         <div class="s3d-form-field-wrapper">
         {for field in section.elements}
@@ -76,23 +77,45 @@
         <div id="newprofilesection_sections_${sectionid}" class="newprofilesection_multiple_sections"></div>
         <button type="submit" class="s3d-button s3d-overlay-button grey profile-section-save-button" style="display:none">__MSG__UPDATE__</button>
     </form>
-    <button id="newprofilesection_add_${sectionid}" class="newprofilesection_add_section s3d-link-button s3d-bold" type="button"><span class="s3d-add_another_location"></span><span>__MSG__ADD_ANOTHER__ ${section.label}</span></button>
+    <button id="newprofilesection_add_${sectionid}" class="newprofilesection_add_section s3d-link-button s3d-bold" type="button"><span class="s3d-add_another_location"></span><span>__MSG__ADD_ANOTHER__ ${section.multipleLabel}</span></button>
+--></div>
+
+<div id="newprofilesection_view_multiple_template"><!--
+    <div id="newprofilesection_sections_${sectionid}" class="newprofilesection_multiple_sections"></div>
+--></div>
+
+<div id="newprofilesection_view_no_results_template" style="display:none"><!--
+    <div class="s3d-no-results-container">
+        <div class="s3d-no-results-arrow-up"></div>
+        <div class="s3d-no-results-icon s3d-no-results-contacts"></div>
+        <h1>
+            <span id="newprofilesection_no_results_text" style="display:none">__MSG__THIS_PERSON_HASNT_ADDED_SECTION_YET__</span>
+            <span id="newprofilesection_no_results_message" style="display:none;">
+                <button type="button" id="newprofilesection_user_message" class="s3d-link-button sakai_sendmessage_overlay" data-sakai-entityid="${userid}" data-sakai-entityname="${displayName}" data-sakai-entitytype="user">__MSG__SEND_THEM_A_MESSAGE__</button> __MSG__TO_REMIND_THEM__
+            </span>
+        </h1>
+    </div>
 --></div>
 
 <div id="newprofilesection_view_template" style="display:none"><!--
-    {macro renderField(label, value)}
-
+    {macro renderField(config, field_id, field_data)}
+        {var value = config.type === "select" ? sakai.api.i18n.General.process(config.select_elements[field_data.value]) : field_data.value}
+        <span class="field_value">${value}</span>
     {/macro}
-    <div class="s3d-contentpage-title">${section.label}</div>
     {for field in section.elements}
         {if field.display}
             {var field_data = data && data[ field_index ] ? data[ field_index ] : false}
+            {if field_data}
             <div class="newprofilesection_field">
-                <span for="${field_index}" class="s3d-input-label">${field.label}:</span>
+                <span class="s3d-input-label">${field.label}:</span>
                 ${renderField(field, field_index, field_data)}
             </div>
+            {/if}
         {/if}
     {/for}
+    {if section.multiple}
+    <hr/>
+    {/if}
 --></div>
 
 
