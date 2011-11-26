@@ -49,15 +49,15 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         // CSS Selectors //
         ///////////////////
 
-        var $rootel = $("#" + tuid),
-            $newprofilesection_container = $("#newprofilesection_container", $rootel),
-            $newprofilesection_header = $("#newprofilesection_header", $rootel),
-            $newprofilesection_header_template = $("#newprofilesection_header_template", $rootel),
-            $newprofilesection_body = $("#newprofilesection_body", $rootel),
-            $newprofilesection_body_template = $("#newprofilesection_body_template", $rootel),
-            $newprofilesection_view_template = $("#newprofilesection_view_template", $rootel),
-            $newprofilesection_edit_template = $("#newprofilesection_edit_template", $rootel),
-            $newprofilesection_edit_multiple_template = $("#newprofilesection_edit_multiple_template", $rootel),
+        var $rootel = $( "#" + tuid ),
+            $newprofilesection_container = $( "#newprofilesection_container", $rootel ),
+            $newprofilesection_header = $( "#newprofilesection_header", $rootel ),
+            $newprofilesection_header_template = $( "#newprofilesection_header_template", $rootel ),
+            $newprofilesection_body = $( "#newprofilesection_body", $rootel ),
+            $newprofilesection_body_template = $( "#newprofilesection_body_template", $rootel ),
+            $newprofilesection_view_template = $( "#newprofilesection_view_template", $rootel ),
+            $newprofilesection_edit_template = $( "#newprofilesection_edit_template", $rootel ),
+            $newprofilesection_edit_multiple_template = $( "#newprofilesection_edit_multiple_template", $rootel ),
             $newprofilesection_sections_multiple = false,
             $newprofilesection_add_button = false,
             $form = false;
@@ -78,7 +78,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             });
             values = multipleValues;
             return values;
-        }
+        };
 
         var saveValues = function() {
             var values = $form.serializeObject(false);
@@ -144,8 +144,11 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 addEmptySection( section, template );
             });
 
-            if (data[widgetData.sectionid].elements) {
-                debug.log("data", data[widgetData.sectionid]);
+            if (data[ widgetData.sectionid ].elements) {
+                debug.log("data", data[ widgetData.sectionid ]);
+                $.each( data[ widgetData.sectionid ].elements, function(uid, sectionData) {
+                    
+                })
                 // render the sections
                 // $("button.profile-section-save-button", $rootel).show();
             }

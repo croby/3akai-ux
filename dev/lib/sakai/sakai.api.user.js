@@ -112,16 +112,36 @@ define(
             });
         },
 
+        /**
+         * Update a user's profile
+         *
+         * @param {String} userid The userid of the user to update their profile
+         * @param {String} section The profile section (ie basic, publications)
+         * @param {Object} data The data to save on this section
+         * @param {Boolean} multiple If this is a multi-assign section, like publications
+         * @param {Function} callback The callback function for after the data has been saved
+         */
         updateUserProfile: function( userid, section, data, multiple, callback ) {
             var url = "/~" + userid + "/public/authprofile/" + section + ".profile.json";
             var postData = {
                 elements: {}
             };
-            $.each(data, function(key, value) {
+            $.each( data, function( key, value ) {
                 if ( multiple ) {
+                    postData.elements[ key ] = {};
+                    $.each( value, function( subkey, subvalue ) {
+                        //oOrder is special, save it without a value sub-element
+                        if ( subkey === "order" ) {
+                            postData.elements[ key ][ subkey ] = subvalue;
+                        } else {
+                            postData.elements[ key ][ subkey ] = {
+                                value: subvalue
+                            };
+                        }
+                    });
                     // TODO set the data nested-like
                 } else {
-                    postData.elements[key] = {
+                    postData.elements[ key ] = {
                         value: value
                     };
                 }
