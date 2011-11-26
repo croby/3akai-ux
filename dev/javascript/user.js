@@ -86,7 +86,7 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
                     firstWidgetRef = widgetID;
                 }
                 structure[widgetID] = {
-                    page: "<div id='widget_displayprofilesection_" + widgetUUID + "' class='widget_inline'/>"
+                    page: "<div id='widget_newprofilesection_" + widgetUUID + "' class='widget_inline'/>"
                 };
                 structure[widgetUUID] = {
                     sectionid: title

@@ -112,6 +112,23 @@ define(
             });
         },
 
+        updateUserProfile: function( userid, section, data, multiple, callback ) {
+            var url = "/~" + userid + "/public/authprofile/" + section + ".profile.json";
+            var postData = {
+                elements: {}
+            };
+            $.each(data, function(key, value) {
+                if ( multiple ) {
+                    // TODO set the data nested-like
+                } else {
+                    postData.elements[key] = {
+                        value: value
+                    };
+                }
+
+            });
+            sakai_serv.saveJSON(url, postData, callback, multiple);
+        },
 
         /**
          * Remove the user credentials in the Sakai3 system.
