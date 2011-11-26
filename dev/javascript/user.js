@@ -86,7 +86,7 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
                     firstWidgetRef = widgetID;
                 }
                 structure[widgetID] = {
-                    page: "<div id='widget_newprofilesection_" + widgetUUID + "' class='widget_inline'/>"
+                    page: "<div id='widget_profilesection_" + widgetUUID + "' class='widget_inline'/>"
                 };
                 structure[widgetUUID] = {
                     sectionid: title
@@ -107,6 +107,16 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
             structure.structure0.profile._ref = firstWidgetRef;
         };
 
+        var updateProfileSections = function( data ) {
+            $.each( data, function( i, section ) {
+                if ( $.isPlainObject( section ) && section.page ) {
+                    if ( page.indexOf("displayprofilesection") > -1 ) {
+                        debug.log(page);
+                    }
+                }
+            });
+        };
+
         var continueLoadSpaceData = function(userid){
             var publicToStore = false;
             var privateToStore = false;
@@ -123,6 +133,7 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
                     publicToStore = $.extend(true, {}, pubdata);
                 } else {
                     pubdata = data;
+                    debug.log(data);
                     pubdata = sakai.api.Server.cleanUpSakaiDocObject(pubdata);
                 }
                 if (!isMe){
