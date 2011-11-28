@@ -371,8 +371,6 @@ define(
              * @param (Array) tags Array of tags to be deleted from the entity
              * @param (Function) callback The callback function
              */
-
-
             var deleteTags = function(tagLocation, tags, deleteTagsCallback) {
                 if (tags.length) {
                     var requests = [];
@@ -1104,7 +1102,7 @@ define(
              *
              * @return node the json object in the structure necessary to render in jstree
              */
-            var buildNodeRecursive = function(node_id, directory, url){
+            var buildNodeRecursive = function(node_id, directory, url, parent_title){
                 // node title
                 var p_title = directory[node_id].title;
                 // node id
@@ -1125,12 +1123,19 @@ define(
                         title: p_title,
                         attr: {
                             "data-path": url,
+                            "data-id": p_id,
                             "title": p_title
                         }
                     },
                     children: []
                 };
-
+                if ( parent_title ) {
+                    node.data.attr["data-long-title"] = parent_title + " » " + p_title;
+                    node.data.attr["data-parent"] = false;
+                } else {
+                    node.data.attr["data-long-title"] = p_title;
+                    node.data.attr["data-parent"] = true;
+                }
                 // if current node has any children
                 // call buildNoderecursive method create the node structure for
                 // all level of child
@@ -1140,7 +1145,7 @@ define(
                         // pass current child(id), the list of all sibligs(json object) and url append/child
                         // for example first level node /directory#courses/firstyearcourses
                         // for second level node /directory#course/firstyearcourses/chemistry
-                        node.children.push(buildNodeRecursive(child, directory[node_id].children, url + "/" + child));
+                        node.children.push(buildNodeRecursive(child, directory[node_id].children, url + "/" + child, p_title));
                     }
                 }
                 return node;
@@ -1154,21 +1159,20 @@ define(
          * @param {Object} key Key to get title for
          * @param {Object} child Object to check for children next, if not supplied start with first child
          */
-        getValueForDirectoryKey : function(key){
-            var directory = this.getDirectoryStructure();
+        getValueForDirectoryKey : function( key, _directory ) {
+            var directory = _directory ? _directory : this.getDirectoryStructure();
 
             var searchDirectoryForKey = function(key, child){
-                var ret;
+                var ret = false;
 
                 if (key == child.attr.id) {
                     ret = child.data.title;
-                }
-                else {
+                } else {
                     if (child.children) {
                         for (var item in child.children) {
                             if (child.children.hasOwnProperty(item)) {
                                 var result = searchDirectoryForKey(key, child.children[item]);
-                                if(result){
+                                if (result) {
                                     ret = result;
                                 }
                             }
@@ -1857,28 +1861,6 @@ define(
             return entity;
         },
 
-        getTranslatedCategories: function() {
-            var ret = [];
-            var directory = sakai_util.getDirectoryStructure();
-            $.each( directory, function( i, dir ) {
-                ret.push({
-                    value: dir.data.title,
-                    id: dir.attr.id,
-                    parent: true,
-                    category: true
-                });
-                $.each( dir.children, function( i, child ) {
-                    ret.push({
-                        value: dir.data.title + " » " + child.data.title,
-                        id: dir.attr.id + "/" + child.attr.id,
-                        parent: false,
-                        category: true
-                    });
-                });
-            });
-            return ret;
-        },
-
         AutoSuggest: {
             /**
             * Autosuggest for users and groups (for other data override the source parameter). setup method creates a new
@@ -2002,8 +1984,16 @@ define(
                 return $(ascontainer);
             },
 
-            setupTagAndCategoryAutosuggest: function( $elt, options, callback ) {
-                var data = sakai_util.getTranslatedCategories();
+            /**
+             * Set up the tag + category autosuggest box
+             *
+             * @param {jQuery} $elt The element to set up as the autosuggest box
+             * @param {Object} options Options to pass through to the autoSuggest setup
+             * @param {jQuery} $list_categories_button The button that should trigger the assignlocation overlay
+             * @param {Array} initialSelections The inital selections for the autosuggest, direct from the profile
+             * @param {Function} callback Function to call after setup is complete
+             */
+            setupTagAndCategoryAutosuggest: function( $elt, options, $list_categories_button, initialSelections, callback ) {
                 var sakaii18nAPI = require( "sakai/sakai.api.i18n" );
                 var defaults = {
                     selectedItemProp: "value",
@@ -2013,21 +2003,134 @@ define(
                     showResultListWhenNoMatch: false,
                     startText: sakaii18nAPI.getValueForKey( "ENTER_TAGS_OR_CATEGORIES" )
                 };
+
+                // Set up the directory structure for autoSuggesting
+                var getTranslatedCategories = function() {
+                    var ret = [];
+                    var directory = sakai_util.getDirectoryStructure();
+                    $.each( directory, function( i, dir ) {
+                        ret.push({
+                            value: dir.data.title,
+                            id: dir.attr.id,
+                            path: dir.attr.id,
+                            parent: true,
+                            category: true
+                        });
+                        $.each( dir.children, function( i, child ) {
+                            ret.push({
+                                value: dir.data.title + " » " + child.data.title,
+                                path: dir.attr.id + "/" + child.attr.id,
+                                id: child.attr.id,
+                                parent: false,
+                                category: true
+                            });
+                        });
+                    });
+                    return ret;
+                };
+
+                // Set up the assignlocation widget
+                var setupAssignLocation = function() {
+                    $( "<div id='assignlocation_container'>" ).appendTo( "body" );
+                    $( "<div id='widget_assignlocation' class='widget_inline'/>" ).appendTo( "#assignlocation_container" );
+                    require("sakai/sakai.api.widgets").widgetLoader.insertWidgets( "#assignlocation_container", false );
+                    $list_categories_button.bind( "click", function() {
+                        var currentlySelected = sakai_util.AutoSuggest.getTagsAndCategories( $elt, true ).categories;
+                        $( window ).trigger( "init.assignlocation.sakai", [ currentlySelected, function( categories ) {
+                            // add newly selected categories to the autoSuggest
+                            currentlySelected = sakai_util.AutoSuggest.getTagsAndCategories( $elt, true ).categories;
+                            var currentCatIDs = [],
+                                catsFromOverlay = [];
+                            // Get the current category IDs
+                            $.each( currentlySelected, function( i, currentCat ) {
+                                currentCatIDs.push( currentCat.id );
+                            });
+                            // Add new items
+                            $.each( categories, function( i, category ) {
+                                if ( $.inArray( category.id, currentCatIDs ) === -1 ) {
+                                    $elt.autoSuggest( "add_selected_item", category );
+                                }
+                                catsFromOverlay.push( category.id );
+                            });
+                            // Remove items removed in the dialog
+                            $.each( currentlySelected, function( i, currentCat ) {
+                                if ( $.inArray( currentCat.id, catsFromOverlay ) === -1 ) {
+                                    var elt = $elt.parents( ".as-selections" ).find( "li[data-value='" + currentCat.value + "']" );
+                                    $elt.autoSuggest( "remove_item", currentCat.value, elt, $( elt ).data( "data" ) );
+                                } 
+                            });
+                        }]);
+                    });
+                };
+
+                // Parse the tags and set them up to be displayed in the autosuggest
+                var setInitialSelections = function() {
+                    var directory = sakai_util.getDirectoryStructure();
+                    var preFill = [];
+                    $.each( initialSelections, function ( idx, tag ) {
+                        var tagObj = {};
+                        if ( tag.indexOf( "directory/" ) === 0 ) {
+                            var tagValue = "";
+                            var directoryItems = tag.split("/");
+                            for ( var i = 1; i < directoryItems.length; i++ ) {
+                                tagValue += sakai_util.getValueForDirectoryKey(directoryItems[i]) + " » ";
+                            }
+                            // Remove the trailing »
+                            tagValue = tagValue.substr( 0, tagValue.length - 3 );
+                            tagObj = {
+                                value: tagValue,
+                                id: directoryItems[ directoryItems.length - 1 ],
+                                parent: directoryItems.length > 2,
+                                category: true,
+                                path: tag.replace("directory/", "")
+                            };
+                        } else {
+                            tagObj = {
+                                id: tag,
+                                value: tag
+                            };
+                        }
+                        preFill.push( tagObj );
+                    });
+                    return preFill;
+                };
+
+                if ( initialSelections ) {
+                    options.preFill = setInitialSelections();
+                }
+
                 $.extend( defaults, options );
+
+                var data = getTranslatedCategories();
+
                 sakai_util.AutoSuggest.setup( $elt, defaults, callback, data );
+
+                setupAssignLocation();
             },
 
-            getTagsAndCategories: function( $elt ) {
+            /**
+             * Get the tags and categories from the autosuggest box
+             *
+             * @param {jQuery} $elt The element which you passed to the autoSuggest setup method
+             * @param {Boolean} longform When true, the categories returned will be the full object
+             *                           instead of just the path string ("directory/category/child")
+             * @return {Object} Two arrays, categories and tags
+             */
+            getTagsAndCategories: function( $elt, longform ) {
                 var tags_cats = $elt.autoSuggest( "get_selections" );
                 var ret = {
                     categories: [],
                     tags: []
                 };
-                $.each(tags_cats, function(i, tc) {
-                    if (tc.category) {
-                        ret.categories.push(tc.id);
+                $.each(tags_cats, function( i, tc ) {
+                    if ( tc.category ) {
+                        if ( longform ) {
+                            ret.categories.push( tc );
+                        } else {
+                            ret.categories.push( "directory/" + tc.path );
+                        }
                     } else {
-                        ret.tags.push(tc.value);
+                        ret.tags.push( tc.value );
                     }
                 });
                 return ret;

@@ -130,6 +130,7 @@ define(
          * @param {String} title the title of the group that's being created
          * @param {String} description the description of the group that's being created
          * @param {Array} tags The tags to tag the group with on creation
+         * @param {Array} categories The caterogies to categorize the group with on creation
          * @param {Array} users An array of users of the format:
          *  "name": user name
          *  "firstName": user's first name
@@ -146,11 +147,11 @@ define(
          * @param {Function} callback the callback function for when the group save is complete. It will pass
          *                            two params, success {Boolean} and nameTaken {Boolean}
         */
-        createGroup : function(id, title, description, tags, users, joinability, visibility, templatePath, subject, body, meData, callback) {
+        createGroup : function(id, title, description, tags, categories, users, joinability, visibility, templatePath, subject, body, meData, callback) {
             var data = {
                 "id" : id,
                 "title" : title,
-                "tags" : tags,
+                "tags" : $.merge( tags, categories ),
                 "description" : description,
                 "visibility" : visibility,
                 "joinability" : joinability,

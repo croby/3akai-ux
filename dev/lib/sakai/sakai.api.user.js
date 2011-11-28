@@ -118,11 +118,16 @@ define(
          * @param {String} userid The userid of the user to update their profile
          * @param {String} section The profile section (ie basic, publications)
          * @param {Object} data The data to save on this section
+         * @param {Array} tags The tags and categories on this user
+         * @param {Object} sectionData The current data for this section, before any updates.
+         *                             Used for saving tags on the user.
          * @param {Boolean} multiple If this is a multi-assign section, like publications
          * @param {Function} callback The callback function for after the data has been saved
          */
-        updateUserProfile: function( userid, section, data, multiple, callback ) {
-            var url = "/~" + userid + "/public/authprofile/" + section + ".profile.json";
+        updateUserProfile: function( userid, section, data, tags, sectionData, multiple, callback ) {
+            var url = "/~" + userid + "/public/authprofile",
+                saveJSONURL = url + "/" + section + ".profile.json";
+            
             var postData = {
                 elements: {}
             };
@@ -147,7 +152,14 @@ define(
                 }
 
             });
-            sakai_serv.saveJSON(url, postData, callback, true);
+            var existingTags = sectionData["sakai:tags"] ? sectionData["sakai:tags"].value : false;
+            sakai_util.tagEntity( url, tags, existingTags, function( success, final_tags ) {
+                sectionData["sakai:tags"] = {
+                    value: final_tags
+                };
+                sakai_serv.saveJSON( saveJSONURL, postData, callback, true );
+            });
+
         },
 
         deleteUserProfileSection: function( userid, section, subsection, callback ) {
@@ -722,39 +734,6 @@ define(
                     }
                 }
             });
-        },
-
-        parseDirectory : function(profile){
-            var obj = {"elements":[]};
-            if (profile.main.data["sakai:tags"] && profile.main.data["sakai:tags"].length > 0) {
-                profile.main.data["sakai:tags"].sort(sakai_util.Sorting.naturalSort);
-                for (var i in profile.main.data["sakai:tags"]) {
-                    if (profile.main.data["sakai:tags"].hasOwnProperty(i)) {
-                        var tag = profile.main.data["sakai:tags"][i] + "";
-                        if (tag.substring(0, 10) === "directory/") {
-                            var finalTag = "";
-                            var split = tag.split("/");
-                            for (var ii = 1; ii < split.length; ii++) {
-                                finalTag += sakai_util.getValueForDirectoryKey(split[ii]);
-                                if (ii < split.length - 1) {
-                                    finalTag += "<span class='profilesection_location_divider'>&raquo;</span>";
-                                }
-                            }
-                            obj.elements.push({
-                                "locationtitle": {
-                                    "value": tag,
-                                    "title": finalTag
-                                },
-                                "id": {
-                                    "display": false,
-                                    "value": "" + Math.round(Math.random() * 1000000000)
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-            return obj;
         },
 
         /**

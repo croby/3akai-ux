@@ -29,8 +29,11 @@
         </select>
     {/macro}
 
-    {macro renderMultiSelect(config, field_id, data, form_group)}
-
+    {macro renderTagField(config, field_id, data)}
+        <div class="autosuggest_wrapper">
+            <button type="button" class="s3d-link-button s3d-bold list_categories">__MSG__LIST_CATEGORIES__</button>
+            <textarea id=${field_id} name="${field_id}" data-tag-field="true"></textarea>
+        </div>
     {/macro}
 
     {var form_group = unique ? "form_group_" + unique : section.id}
@@ -47,11 +50,13 @@
                 {var field_data = data && data[ field_index ] ? data[ field_index ] : false}
                 {var field_id = unique ? field_index + "_" + unique : field_index}
                 <div class="displayprofilesection_field">
-                    <label for="${field_id}" class="s3d-input-label">${field.label}:</label>
+                    <label for="${field_id}" class="s3d-input-label{if field.type === "tags"} tagslabel{/if}">${field.label}:</label>
                     {if field.type === "select"}
                         ${renderDropdown(field, field_id, field_data)}
                     {elseif field.type === "textarea"}
                         ${renderTextarea(field, field_id, field_data)}
+                    {elseif field.type === "tags"}
+                        ${renderTagField(field, field_id, field_data)}
                     {else}
                         ${renderTextInput(field, field_id, field_data)}
                     {/if}

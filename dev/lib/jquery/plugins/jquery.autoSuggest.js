@@ -121,7 +121,6 @@ require([ 'jquery' ], function(jQuery) {
                                 input.autoSuggest( "add_selected_item", data, "u" + $( "li", input.data( "selections_holder" ) ).length ).addClass( "blur" );
                             },
                             remove: function( value ) {
-                                debug.log(value);
                                 input.data( "values_input" ).val( input.data( "values_input" ).val().replace( "," + value + ",", "," ) );
                                 input.data( "selections_holder" ).find( "li[ data-value = '" + value + "' ]" ).remove();
                             }
@@ -455,6 +454,9 @@ require([ 'jquery' ], function(jQuery) {
         add_selected_item: function( data, num ) {
             return this.each(function( x ) {
                 var input = $( this );
+                if ( !num ) {
+                    num = "00" + ($( "li", input.data( "selections_holder" )).length + 1);
+                }
                 input.data( "values_input" ).val( ( input.data( "values_input" ).val() || "," ) + data[ input.data( "opts" ).selectedValuesProp ] + "," );
                 input.removeAttr( "placeholder" );
                 var item = $( "<li class='as-selection-item' id='as-selection-" + num + "' data-value='" + data[ input.data( "opts" ).selectedValuesProp ] + "'></li>" ).click(function() {

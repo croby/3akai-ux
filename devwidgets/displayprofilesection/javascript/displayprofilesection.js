@@ -43,7 +43,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         var editing = false,
             userid = false,
             multiple = false,
-            multipleSectionLength = 0;
+            multipleSectionLength = 0,
+            sectionData = false;
 
         ///////////////////
         // CSS Selectors //
@@ -95,13 +96,26 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         };
 
         var saveValues = function() {
+            // Serialize the data from the form for saving
             var values = $form.serializeObject( false );
             if ( multiple ) {
                 values = getMultipleValues( values );
             }
-            // Get tags & Categories if they're in this form
-            sakai.api.User.updateUserProfile(userid, widgetData.sectionid, values, multiple, handleSave);
 
+            // Get tags & categories if they're in this form
+            var tags = [];
+            var $tagfield = $displayprofilesection_body.find( "textarea[data-tag-field]" );
+            if ( $tagfield.length ) {
+                // Remove the hidden autosuggest input field from the values
+                $form.find( "input" ).each( function( i, input ) {
+                    if ( $( input ).hasClass( "as-values" ) ) {
+                        delete values[ $( input ).attr("name") ];
+                    }
+                });
+                tags_cats = sakai.api.Util.AutoSuggest.getTagsAndCategories( $tagfield );
+                tags = $.merge(tags_cats.tags, tags_cats.categories);
+            }
+            sakai.api.User.updateUserProfile(userid, widgetData.sectionid, values, tags, sectionData, multiple, handleSave);
             return false;
         };
 
@@ -242,18 +256,27 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                         renderMultiSection( template, section, data );
                     } else {
                         if ( editing || sectionHasElements( data[ widgetData.sectionid ].elements ) ) {
-                            var thisData = data[ widgetData.sectionid ] && data[ widgetData.sectionid ].elements ? data[ widgetData.sectionid ].elements : null;
+                            sectionData = data[ widgetData.sectionid ] && data[ widgetData.sectionid ].elements ? data[ widgetData.sectionid ].elements : false;
                             var bodyHTML = sakai.api.Util.TemplateRenderer( template, {
                                 sectionid: widgetData.sectionid,
                                 section: section,
-                                data: thisData,
+                                data: sectionData,
                                 unique: false,
                                 sakai: sakai
                             });
                             $displayprofilesection_body.html( sakai.api.i18n.General.process( bodyHTML ) );
+                            var $tagfield = $displayprofilesection_body.find( "textarea[data-tag-field]" );
+                            if ( $tagfield.length ) {
+                                var autoSuggestOptions = {
+                                    scrollHeight: 120
+                                };
+                                var initialTagsValue = sectionData["sakai:tags"] && sectionData["sakai:tags"].value ? sectionData["sakai:tags"].value : false;
+                                sakai.api.Util.AutoSuggest.setupTagAndCategoryAutosuggest($tagfield, autoSuggestOptions, $(".list_categories", $rootel), initialTagsValue);
+                            }
                         } else {
                             renderEmptySection( data, section );
                         }
+                        
                     }
 
                     if ( editing ) {

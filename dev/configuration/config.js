@@ -338,10 +338,10 @@ define(function(){
                                 "display": true
                             },
                             "tags": {
-                                "label": "__MSG__TAGS__",
+                                "label": "__MSG__TAGS_AND_CATEGORIES__",
                                 "required": false,
                                 "display": true,
-                                "type": "textarea",
+                                "type": "tags",
                                 "tagField": true
                             }
                         }
