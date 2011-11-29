@@ -2031,10 +2031,12 @@ define(
 
                 // Set up the assignlocation widget
                 var setupAssignLocation = function() {
-                    $( "<div id='assignlocation_container'>" ).appendTo( "body" );
-                    $( "<div id='widget_assignlocation' class='widget_inline'/>" ).appendTo( "#assignlocation_container" );
-                    require("sakai/sakai.api.widgets").widgetLoader.insertWidgets( "#assignlocation_container", false );
-                    $list_categories_button.bind( "click", function() {
+                    if ( $( "#assignlocation_container" ).length === 0 ) {
+                        $( "<div id='assignlocation_container'>" ).appendTo( "body" );
+                        $( "<div id='widget_assignlocation' class='widget_inline'/>" ).appendTo( "#assignlocation_container" );
+                        require("sakai/sakai.api.widgets").widgetLoader.insertWidgets( "#assignlocation_container", false );                        
+                    }
+                    $list_categories_button.off( "click" ).on( "click", function() {
                         var currentlySelected = sakai_util.AutoSuggest.getTagsAndCategories( $elt, true ).categories;
                         $( window ).trigger( "init.assignlocation.sakai", [ currentlySelected, function( categories ) {
                             // add newly selected categories to the autoSuggest
@@ -2096,13 +2098,14 @@ define(
                 };
 
                 if ( initialSelections ) {
-                    options.preFill = setInitialSelections();
+                    defaults.preFill = setInitialSelections();
                 }
 
                 $.extend( defaults, options );
 
                 var data = getTranslatedCategories();
 
+                sakai_util.AutoSuggest.destroy( $elt );
                 sakai_util.AutoSuggest.setup( $elt, defaults, callback, data );
 
                 setupAssignLocation();

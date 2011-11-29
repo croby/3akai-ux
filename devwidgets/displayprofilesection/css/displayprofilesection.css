@@ -32,10 +32,8 @@
 #displayprofilesection_container hr{margin:10px 0 10px 0px;border-bottom:1px solid #999;color:transparent;height:1px;width:100%; clear: both;}
 
 #displayprofilesection_container .tagslabel{margin-top:12px;}
-#displayprofilesection_container .list_categories{float:right;}
 #displayprofilesection_container textarea {height:50px;}
-#displayprofilesection_container .autosuggest_wrapper{float:left;position:relative;width:55%;}
-#displayprofilesection_container ul.as-list{top:100%;margin-top:-15px;}
+#displayprofilesection_container .autosuggest_wrapper{width:55%;}
 #displayprofilesection_container .s3d-form-field-wrapper ul.as-selections{width:100%;}
 
 /* Validation */
