@@ -52,8 +52,11 @@
                     <label for="newaddcontent_upload_content_description">__MSG__DESCRIPTION__:</label>
                     <textarea placeholder="__MSG__DESCRIPTION_HELPS_FINDABILITY__" id="newaddcontent_upload_content_description"></textarea>
 
-                    <label for="newaddcontent_upload_content_tags">__MSG__TAGS__:</label>
-                    <input type="text" placeholder="__MSG__SEPARATE_EACH_TAG__" id="newaddcontent_upload_content_tags"/>
+                    <div class="autosuggest_wrapper">
+                        <label for="newaddcontent_upload_content_tags">__MSG__TAGS_AND_CATEGORIES__:</label>
+                        <button type="button" class="s3d-link-button s3d-bold list_categories">__MSG__LIST_CATEGORIES__</button>
+                        <input type="text" id="newaddcontent_upload_content_tags"/>
+                    </div>
 
                     <label for="newaddcontent_upload_content_permissions">__MSG__WHO_CAN_SEE_IT__:</label>
                     <select id="newaddcontent_upload_content_permissions">

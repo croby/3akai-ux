@@ -80,7 +80,7 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
             var initialProfilePost = [];
             var paths = [];
             var permissions = [];
-            var postStructure = false;
+            var updateStructure = false;
             $.each(sakai.config.Profile.configuration.defaultConfig, function(title, section) {
                 var widgetUUID = sakai.api.Util.generateWidgetId();
                 if ( !newProfile && structure.structure0.profile.hasOwnProperty( title ) ) {
@@ -123,9 +123,9 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
                     });
                 }
             });
-            debug.log(initialProfilePost.length);
+
             if ( isMe && initialProfilePost.length ) {
-                postStructure = true;
+                updateStructure = true;
                 sakai.api.Server.batch(initialProfilePost, function(success, data){
                     if (success) {
                         sakai.api.Content.setACLsOnPath(paths, permissions, sakai.data.me.user.userid, function(success){
@@ -141,7 +141,7 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
 
             structure.structure0.profile = profilestructure;
             structure.structure0.profile._ref = firstWidgetRef;
-            return postStructure;
+            return updateStructure;
         };
 
         var continueLoadSpaceData = function(userid){
@@ -164,10 +164,8 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
                         pubdata.structure0[i] = determineUserAreaPermissions(pubdata.structure0[i]);
                     }
                 }
-                if (pubdata.structure0.profile) {
-                    if ( setupProfile( pubdata, isMe ) ) {
-                        publicToStore = $.extend(true, {}, pubdata);
-                    }
+                if ( pubdata.structure0.profile && setupProfile( pubdata, isMe ) ) {
+                    publicToStore = $.extend(true, {}, pubdata);
                 }
                 if (isMe){
                     sakai.api.Server.loadJSON(privurl, function(success2, data2){
@@ -180,10 +178,8 @@ require(["jquery","sakai/sakai.api.core"], function($, sakai) {
                             privdata = sakai.api.Server.cleanUpSakaiDocObject(privdata);
                             // privdata = cleanProfile( privdata );
                         }
-                        if (privdata.structure0.profile) {
-                            if ( setupProfile( privdata, isMe ) ) {
-                                privateToStore = $.extend(true, {}, privdata);
-                            }
+                        if ( privdata.structure0.profile && setupProfile( privdata, isMe ) ) {
+                            privateToStore = $.extend(true, {}, privdata);
                         }
                         if (publicToStore) {
                             if ($.isPlainObject(publicToStore.structure0)) {

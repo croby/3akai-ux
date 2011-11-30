@@ -161,7 +161,7 @@
         {/if}
         <img src="${data.data['iconURL']}" alt="${data.data["sakai:pooled-content-file-name"]|safeOutput}"/>
     </div>
-    <span id="entity_name" class="s3d-bold {if data.isManager} contentmetadata_editable{/if}">${data.data["sakai:pooled-content-file-name"]|safeOutput}</span>
+    <span id="entity_name" data-edit-field="name" class="s3d-bold {if data.isManager} contentmetadata_editable{/if}">${data.data["sakai:pooled-content-file-name"]|safeOutput}</span>
     <span id="entity_name_edit" style="display:none">
         <input id="entity_name_text" type="text" />
     </span>

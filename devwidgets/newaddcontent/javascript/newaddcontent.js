@@ -123,6 +123,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.fileupload", "
         // Keep track of number of files in the upload list selected by browsing the OS
         // This number will later be used to check against the multifile list of uploads to avoid bug (https://jira.sakaiproject.org/browse/SAKIII-3269)
         var numberOfBrowsedFiles = 0;
+        var $autoSuggestElt = false;
 
         // Paths
         var uploadPath = "/system/pool/createfile";
@@ -530,7 +531,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.fileupload", "
                                 if (itemsToUpload[itemToUpload]["sakai:originaltitle"] === i){
                                     itemsToUpload[itemToUpload] = $.extend({}, data[i].item, itemsToUpload[itemToUpload]);
                                     if (data[i].type === "imscp") {
-                                        setIMSCPContent(itemsToUpload[itemToUpload], data[i].item)
+                                        setIMSCPContent(itemsToUpload[itemToUpload], data[i].item);
                                     } else {
                                         setDataOnContent(itemsToUpload[itemToUpload]);
                                     }
@@ -592,7 +593,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.fileupload", "
                 var data = $.parseJSON(xhReq.responseText);
                 documentObj = $.extend({}, data[documentObj["sakai:originaltitle"]].item, documentObj);
                 if (data[documentObj["sakai:originaltitle"]].type === "imscp") {
-                    setIMSCPContent(documentObj, data[documentObj["sakai:originaltitle"]].item)
+                    setIMSCPContent(documentObj, data[documentObj["sakai:originaltitle"]].item);
                 } else {
                     setDataOnContent(documentObj);
                 }
@@ -916,6 +917,8 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.fileupload", "
                 copyright_default: sakai.config.Permissions.Copyright.defaults["content"],
                 sakai: sakai
             }));
+            $autoSuggestElt = $( newaddcontentUploadContentTags );
+            sakai.api.Util.AutoSuggest.setupTagAndCategoryAutosuggest( $autoSuggestElt, null, $( ".list_categories", "#newaddcontent_upload_content_fields" ) );
             $("#newaddcontent_container_lhchoice").find("a:first").focus();
         };
 

@@ -2039,9 +2039,9 @@ define(
                         $( "<div id='widget_assignlocation' class='widget_inline'/>" ).appendTo( "#assignlocation_container" );
                         require("sakai/sakai.api.widgets").widgetLoader.insertWidgets( "#assignlocation_container", false );                        
                     }
-                    $list_categories_button.off( "click" ).on( "click", function() {
+                    $list_categories_button.off( "click" ).on( "click", function( e ) {
                         var currentlySelected = sakai_util.AutoSuggest.getTagsAndCategories( $elt, true ).categories;
-                        $( window ).trigger( "init.assignlocation.sakai", [ currentlySelected, function( categories ) {
+                        $( window ).trigger( "init.assignlocation.sakai", [ currentlySelected, e, function( categories ) {
                             // add newly selected categories to the autoSuggest
                             currentlySelected = sakai_util.AutoSuggest.getTagsAndCategories( $elt, true ).categories;
                             var currentCatIDs = [],

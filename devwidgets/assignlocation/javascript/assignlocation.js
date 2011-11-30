@@ -197,19 +197,27 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         };
 
         var doInit = function(){
-            $assignlocationContainer.jqm({
-                modal: true,
-                toTop: true,
-                onShow: showContainer,
-                onClose: closeContainer
-            });
-            $( window ).bind( "init.assignlocation.sakai", function( e, _initiallySelected, _saveCallback ) {
+
+            $( window ).bind( "init.assignlocation.sakai", function( e, _initiallySelected, originalEvent, _saveCallback ) {
                 if ( $.isFunction( _saveCallback ) ) {
                     saveCallback = _saveCallback;
                 }
                 if ( _initiallySelected ) {
                     determineInitiallySelected( _initiallySelected );                    
                 }
+                // Need a larget zIndex if this was triggered from another overlay
+                var $target = $( originalEvent.target );
+                var zIndex = 4000;
+                if ( $target.parents( ".s3d-dialog" ).length ) {
+                    zIndex = 5000;
+                }
+                $assignlocationContainer.jqm({
+                    modal: true,
+                    toTop: true,
+                    onShow: showContainer,
+                    onClose: closeContainer,
+                    zIndex: zIndex
+                });
                 $assignlocationContainer.jqmShow();
             });
         };
