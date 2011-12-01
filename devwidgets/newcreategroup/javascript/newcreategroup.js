@@ -115,16 +115,14 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         var grouptitle = $newcreategroupGroupTitle.val() || "";
         var groupdescription = $newcreategroupGroupDescription.val() || "";
         var groupid = sakai.api.Util.makeSafeURL($newcreategroupSuggestedURL.val(), "-");
-        var tags_cats = sakai.api.Util.AutoSuggest.getTagsAndCategories( $newcreategroupGroupTags );
-        var grouptags = tags_cats.tags;
-        var groupcategories = tags_cats.categories;
+        var grouptags = sakai.api.Util.AutoSuggest.getTagsAndCategories( $newcreategroupGroupTags, true );
         var users = createUsersToAddObject();
         var subject = sakai.api.i18n.getValueForKey("USER_HAS_ADDED_YOU_AS_A_ROLE_TO_THE_GROUP_GROUPNAME", "newcreategroup").replace("<\"Role\">", "${role}");
         var body = $.trim($newcreategroup_members_message_template_unprocessed.text().replace("<\"Role\">", "${role}").replace("<\"First Name\">", "${firstName}"));
         var joinable = $newcreategroupGroupMembership.val();
         var visible = $newcreategroupCanBeFoundIn.val();
         //createGroup : function(id, title, description, tags, users, joinability, visibility, templatePath, subject, body, meData, callback) {
-        sakai.api.Groups.createGroup(groupid, grouptitle, groupdescription, grouptags, groupcategories, users, joinable, visible, templatePath, subject, body, sakai.data.me, function(success, groupData, nameTaken){
+        sakai.api.Groups.createGroup(groupid, grouptitle, groupdescription, grouptags, users, joinable, visible, templatePath, subject, body, sakai.data.me, function(success, groupData, nameTaken){
             if (success) {
                 window.location = "/~" + groupid;
             } else {

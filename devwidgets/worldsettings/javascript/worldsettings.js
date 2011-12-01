@@ -75,15 +75,13 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         ////////////////////
 
         var handleSubmit = function(form) {
-            $worldsettingsContainer.find("select, input, textarea").attr("disabled","disabled");
-            $worldsettingsContainer.find("select, input, textarea").attr("disabled","disabled");
+            $worldsettingsContainer.find("select, input").attr("disabled","disabled");
             var worldTitle = $.trim($(worldsettingsTitle).val());
             var worldDescription = $.trim($(worldsettingsDescription).val());
             var foundIn = $.trim($(worldsettingsCanBeFoundIn).val());
             var membership = $.trim($(worldsettingsMembership).val());
 
-            var tags_cats = sakai.api.Util.AutoSuggest.getTagsAndCategories( $worldsettingsTags );
-            var worldTags = $.merge(tags_cats.tags, tags_cats.categories);
+            var worldTags = sakai.api.Util.AutoSuggest.getTagsAndCategories( $worldsettingsTags, true );
 
             var worldData = {
                 "sakai:group-title":  worldTitle,
@@ -93,8 +91,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             };
 
             sakai.api.Groups.updateGroupProfile(worldId, worldData, worldTags, sakai_global.group.groupData, function( success ) {
-                 $worldsettingsContainer.find("select, input, textarea").removeAttr("disabled");
-                 $worldsettingsContainer.find("select, input, textarea").removeAttr("disabled");
+                 $worldsettingsContainer.find("select, input").removeAttr("disabled");
 
                  $(window).trigger("sakai.entity.updateTitle", worldTitle);
                  sakai.api.Util.notification.show($("#worldsettings_success_title").html(), $("#worldsettings_success_body").html());

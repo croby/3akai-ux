@@ -108,22 +108,29 @@
         <span class="field_value">
         {if config.limitDisplayLength}
             ${sakai.api.Util.shortenString(value, config.limitDisplayLength)|safeOutput}
+        {elseif config.type === "tags"}
+            {var tags = sakai.api.Util.formatTags(value)}
+            {for tag in tags}{if tag_index > 0},{/if} <a href="${tag.link}" class="s3d-action" title="${tag.linkTitle}">${tag.value}</a>{/for}
         {else}
             ${value|safeOutput}
         </span>
         {/if}
     {/macro}
+
     {for field in section.elements}
         {if field.display}
-            {var field_data = data && data[ field_index ] ? data[ field_index ] : false}
-            {if field_data && field_data.value && $.trim(field_data.value) !== ""}
+            {var field_key = field_index === "tags" ? "sakai:tags" : field_index}
+            ${debug.log(field, data[ field_key ])}
+            {var field_data = data && data[ field_key ] ? data[ field_key ] : false}
+            {if field_data && field_data.value && ($.trim(field_data.value) !== "" || $.isArray(field_data.value))}
             <div class="displayprofilesection_field">
                 <span class="s3d-input-label">${field.label}:</span>
-                ${renderField(field, field_index, field_data)}
+                ${renderField(field, field_key, field_data)}
             </div>
             {/if}
         {/if}
     {/for}
+
     {if section.multiple}
     <hr/>
     {/if}

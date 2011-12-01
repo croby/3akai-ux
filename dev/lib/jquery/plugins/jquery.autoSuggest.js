@@ -299,7 +299,6 @@ require([ 'jquery' ], function(jQuery) {
                                     break;
                             }
                         });
-
                     };
 
                     var keyChange = function() {
@@ -313,10 +312,10 @@ require([ 'jquery' ], function(jQuery) {
                             return;
                         }
                         input.data( "prev" , string );
-                        if ( string.length >= opts.minChars ) {
+                        if ( string.length >= opts.minChars && input.data( "selections_holder" ) ) {
                             input.data( "selections_holder" ).addClass( "loading" );
                             processRequest(string);
-                        } else {
+                        } else if ( input.data( "selections_holder" ) && input.data( "results_holder" ) ) {
                             input.data( "selections_holder" ).removeClass( "loading" );
                             input.data( "results_holder" ).hide();
                         }
@@ -467,7 +466,7 @@ require([ 'jquery' ], function(jQuery) {
                         input.data( "input_focus", false );
                     }).data( "data", data );
                 var close = $( "<a class='as-close'>&times;</a>" ).click(function() {
-                        input.autoSuggest( "remove_item", data[ input.data( "opts" ).selectedValuesProp ], item, data);
+                        input.autoSuggest( "remove_item", data[ input.data( "opts" ).selectedValuesProp ], item, data );
                         input.data( "input_focus", true );
                         input.focus();
                         return false;
@@ -483,12 +482,12 @@ require([ 'jquery' ], function(jQuery) {
             return this.each(function( x ) {
                 var input = $( this );
                 input.data( "values_input" ).val( input.data( "values_input" ).val().replace( "," + text + ",", "," ) );
-                input.data( "opts" ).selectionRemoved.call( this, $(elt) );
+                input.data( "opts" ).selectionRemoved.call( this, $( elt ) );
                 if ( input.data( "org_li" ).prev().length === 0 && input.data( "opts" ).usePlaceholder ) {
                     input.attr( "placeholder", input.data( "opts" ).startText);
                 }
                 var selections = input.data( "selections" );
-                selections = $.grep(selections, function(sel, i) {
+                selections = $.grep( selections, function( sel, i ) {
                     return sel[ input.data( "opts" ).selectedValuesProp ] !== data[ input.data( "opts" ).selectedValuesProp ];
                 });
                 input.data( "selections", selections );
@@ -496,7 +495,7 @@ require([ 'jquery' ], function(jQuery) {
         },
 
         get_selections: function() {
-            return $( this ).data( "selections" );
+            return $( this ).data( "selections" ) || [];
         }
     };
 

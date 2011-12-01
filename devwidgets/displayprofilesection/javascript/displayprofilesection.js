@@ -112,8 +112,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                         delete values[ $( input ).attr("name") ];
                     }
                 });
-                tags_cats = sakai.api.Util.AutoSuggest.getTagsAndCategories( $tagfield );
-                tags = $.merge(tags_cats.tags, tags_cats.categories);
+                tags = sakai.api.Util.AutoSuggest.getTagsAndCategories( $tagfield, true );
             }
             sakai.api.User.updateUserProfile(userid, widgetData.sectionid, values, tags, sectionData, multiple, handleSave);
             return false;

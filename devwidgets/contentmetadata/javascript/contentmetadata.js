@@ -250,8 +250,8 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
         ////////////////////////
 
         var updateTags = function(){
-            var tags_cats = sakai.api.Util.AutoSuggest.getTagsAndCategories($contentmetadataAutosuggestElt);
-            sakai.api.Util.tagEntity("/p/" + sakai_global.content_profile.content_data.data["_path"], $.merge(tags_cats.tags, tags_cats.categories), sakai_global.content_profile.content_data.data["sakai:tags"], function(success, newTags){
+            var tags = sakai.api.Util.AutoSuggest.getTagsAndCategories( $contentmetadataAutosuggestElt, true );
+            sakai.api.Util.tagEntity("/p/" + sakai_global.content_profile.content_data.data["_path"], tags, sakai_global.content_profile.content_data.data["sakai:tags"], function(success, newTags){
                 sakai_global.content_profile.content_data.data["sakai:tags"] = newTags;
                 renderTags(false);
                 // Create an activity

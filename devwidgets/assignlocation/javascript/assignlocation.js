@@ -105,8 +105,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         };
 
         var saveLocations = function(){
-            if (saveCallback) {
-                saveCallback(initiallyRendered);
+            if ( saveCallback ) {
+                saveCallback( initiallyRendered );
             }
             $assignlocationContainer.jqmHide();
         };

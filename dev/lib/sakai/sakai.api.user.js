@@ -425,13 +425,6 @@ define(
                         sakaiUserAPI.setProfileBasicElementValue(sakaiUserAPI.data.me.profile, "lastName", sakaiUserAPI.data.me.profile["rep:userId"]);
                     }
 
-                    // Parse the directory locations
-                    var directory = [];
-                    if(sakaiUserAPI.data.me.profile && sakaiUserAPI.data.me.profile["sakai:tags"]){
-                        directory = sakai_util.getDirectoryTags(sakaiUserAPI.data.me.profile["sakai:tags"].toString());
-                        sakaiUserAPI.data.me.profile.saveddirectory = directory;
-                    }
-
                     // SAKIII-2419 server isn't saving basic access param
                     if (sakaiUserAPI.data.me.profile.basic.access === undefined){
                         sakaiUserAPI.data.me.profile.basic.access = "everybody";
@@ -835,7 +828,7 @@ define(
                 if (item.target){
                     item = item.profile;
                 }
-                if (item && item["rep:userId"] && item["rep:userId"] != "anonymous") {
+                if (item && item["rep:userId"] && item["rep:userId"] !== "anonymous") {
                     item.id = item["rep:userId"];
                     item.userid = item["rep:userId"];
                     item.picture = sakaiUserAPI.getProfilePicture(item);
@@ -848,9 +841,9 @@ define(
                         item.pictureLarge = sakai_conf.URL.USER_DEFAULT_ICON_URL_LARGE;
                     }
                     if (item["sakai:tags"] && item["sakai:tags"].length > 0){
-                        item.tagsProcessed = sakai_util.shortenTags(sakai_util.formatTagsExcludeLocation(item["sakai:tags"]));
+                        item.tagsProcessed = sakai_util.formatTags(item["sakai:tags"]);
                     } else if (item.basic && item.basic.elements && item.basic.elements["sakai:tags"]) {
-                        item.tagsProcessed = sakai_util.shortenTags(sakai_util.formatTagsExcludeLocation(item.basic.elements["sakai:tags"].value));
+                        item.tagsProcessed = sakai_util.formatTags(item.basic.elements["sakai:tags"].value);
                     }
 
                     item.connected = false;

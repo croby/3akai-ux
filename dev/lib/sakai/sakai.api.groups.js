@@ -130,7 +130,6 @@ define(
          * @param {String} title the title of the group that's being created
          * @param {String} description the description of the group that's being created
          * @param {Array} tags The tags to tag the group with on creation
-         * @param {Array} categories The caterogies to categorize the group with on creation
          * @param {Array} users An array of users of the format:
          *  "name": user name
          *  "firstName": user's first name
@@ -147,11 +146,11 @@ define(
          * @param {Function} callback the callback function for when the group save is complete. It will pass
          *                            two params, success {Boolean} and nameTaken {Boolean}
         */
-        createGroup : function(id, title, description, tags, categories, users, joinability, visibility, templatePath, subject, body, meData, callback) {
+        createGroup : function(id, title, description, tags, users, joinability, visibility, templatePath, subject, body, meData, callback) {
             var data = {
                 "id" : id,
                 "title" : title,
-                "tags" : $.merge( tags, categories ),
+                "tags" : tags,
                 "description" : description,
                 "visibility" : visibility,
                 "joinability" : joinability,
@@ -262,7 +261,8 @@ define(
             };
 
             // Get the difference of the tags arrays. If there is one, then we should update it
-            var merged = _.uniq($.merge( $.merge( [], tags ), groupData[ "sakai:tags" ] ));
+            groupData[ "sakai:tags" ] = groupData[ "sakai:tags" ] || [];
+            var merged = _.uniq( $.merge( $.merge( [], tags ), groupData[ "sakai:tags" ] ) );
             if ( merged.length !== tags.length || merged.length !== groupData[ "sakai:tags" ].length ) {
                 doTagsPost = true;
             }
@@ -1069,9 +1069,9 @@ define(
                     }
                     // Modify the tags if there are any
                     if (group["sakai:tags"]) {
-                        group.tagsProcessed = sakai_util.shortenTags(sakai_util.formatTagsExcludeLocation(group["sakai:tags"]));
+                        group.tagsProcessed = sakai_util.formatTags(group["sakai:tags"]);
                     } else if (group.basic && group.basic.elements && group.basic.elements["sakai:tags"]) {
-                        group.tagsProcessed = sakai_util.shortenTags(sakai_util.formatTagsExcludeLocation(group.basic.elements["sakai:tags"].value));
+                        group.tagsProcessed = sakai_util.formatTags(group.basic.elements["sakai:tags"].value);
                     }
                     group.groupType = groupType;
                     group.lastModified = group.lastModified;
