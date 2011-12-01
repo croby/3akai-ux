@@ -765,7 +765,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.fileupload", "
 
             sakai.api.Server.batch(batchRequests, function(success, response){
                 // Tag the content
-                sakai.api.Util.tagEntity("/p/" + (contentObj["_path"]), sakai.api.Util.formatTags(contentObj["sakai:tags"]), false, function(){
+                sakai.api.Util.tagEntity("/p/" + (contentObj["_path"]), contentObj["sakai:tags"], false, function() {
                     // Set the correct file permissions
                     sakai.api.Content.setFilePermissions([{"hashpath": contentObj["_path"], "permissions": contentObj["sakai:permissions"]}], function(){
                         lastUpload.push(contentObj);
@@ -909,7 +909,6 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.fileupload", "
          * Show the interface to upload new content
          */
         var renderUploadNewContent = function(){
-            debug.log("renderUploadNewContent");
             showSelectedItem($(newaddcontentUploadContentTemplate));
             $("form#newaddcontent_upload_content_form input[type='file']").MultiFile({
                 afterFileSelect: function(element, fileName, master_element){
@@ -1030,7 +1029,6 @@ require(["jquery", "sakai/sakai.api.core", "jquery-plugins/jquery.fileupload", "
          * Show the interface to add a link
          */
         var renderAddLink = function(){
-            debug.log("renderAddLink");
             if ($.trim($(newaddcontentAddLinkURL).val()) !== "") {
                 enableAddToQueue();
             }

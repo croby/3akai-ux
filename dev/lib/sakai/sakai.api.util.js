@@ -218,7 +218,7 @@ define(
          * @return {Array} Array of formatted tags
          */
         formatTags : function(inputTags){
-            if ( $.trim( inputTags ) !== "" ) {
+            if ( $.trim( inputTags ) !== "" || $.isArray( inputTags ) ) {
                 var tags = [];
                 var splitTags = inputTags;
                 if ( !$.isArray( inputTags ) ) {
@@ -2017,7 +2017,6 @@ define(
                     $list_categories_button.off( "click" ).on( "click", function( e ) {
                         var currentlySelected = sakai_util.AutoSuggest.getTagsAndCategories( $elt, false, true ).categories;
                         $( window ).trigger( "init.assignlocation.sakai", [ currentlySelected, e, function( categories ) {
-                            debug.log( $elt );
                             // add newly selected categories to the autoSuggest
                             currentlySelected = sakai_util.AutoSuggest.getTagsAndCategories( $elt, false, true ).categories;
                             var currentCatIDs = [],
