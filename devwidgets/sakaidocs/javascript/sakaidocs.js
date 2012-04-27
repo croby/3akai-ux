@@ -604,9 +604,64 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
 
         var paste_preprocess = function(pl, o) {
             var $content = $('<div>' + o.content + '</div>');
-            // Remove any base64-encoded images that have been pasted
-            $content.find('img[src^="data:image"]').remove();
+            var $images = $content.find('img[src^="data:image"]');
+            $.each($images, function(i, img) {
+                var splitSrc = $(img).attr('src').split(',', 2);
+                var mimeType = splitSrc[0].split('data:')[1].split(';')[0];
+                var src = splitSrc[1];
+                var newSrc = uploadImage(src, mimeType);
+                $(img).attr('src', newSrc);
+            });
             o.content = $content.html();
+        };
+
+        var uploadImage = function(base64Image, mimeType) {
+            var xhReq = new XMLHttpRequest();
+            xhReq.open('POST', '/system/pool/createfile', false);
+            var formData = new FormData();
+            formData.append('enctype', 'multipart/form-data');
+            formData.append('filename', 'Pasted Image');
+            formData.append('mimeType', mimeType);
+            formData.append('base64', 'true');
+            formData.append('file', base64Image);
+            xhReq.send(formData);
+            if (xhReq.status === 201) {
+                var data = $.parseJSON(xhReq.responseText);
+                setDataOnContent(data._contentItem.item, mimeType);
+            }
+            return "/p/" + data._contentItem.poolId;
+        };
+
+        var setDataOnContent = function(data, mimeType) {
+            var batchRequests = [];
+            batchRequests.push({
+                'url': '/p/' + data['_path'],
+                'method': 'POST',
+                'parameters': {
+                    'sakai:pooled-content-file-name': data.filename,
+                    'sakai:description': '',
+                    'sakai:permissions': sakai.config.Permissions.Content.defaultaccess,
+                    'sakai:copyright': sakai.config.Permissions.Copyright.defaults.content,
+                    'sakai:allowcomments': 'true',
+                    'sakai:showcomments': 'true',
+                    'sakai:fileextension': mimeType.split('/')[1]
+                }
+            });
+
+            // Add this content to the current group's library if there is one
+            if (sakai_global.group) {
+                batchRequests.push({
+                    url: '/p/' + data['_path'] + '.members.json',
+                    parameters: {
+                        ':viewer': sakai_global.group.groupId
+                    },
+                    method: 'POST'
+                });
+            }
+            // This call is syncronous
+            sakai.api.Server.batch(batchRequests, function(success, response) {
+                sakai.api.Content.setFilePermissions([{'hashpath': data['_path'], 'permissions': sakai.config.Permissions.Content.defaultaccess}]);
+            }, false, true, false);
         };
 
         ///////////////////////////////////
