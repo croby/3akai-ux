@@ -44,6 +44,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         var preferencesChanges = false;
         var privacyChanges = false;
         var passwordChanges = false;
+        var emailChanges = false;
         var pageReload = false;
 
 
@@ -366,10 +367,11 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 sakai.data.me.user.userid,
                 "basic", data, false, {}, false, function(success, data) {
                     if (success) {
+                        emailChanges = false;
                         sakai.api.Util.notification.show(
                             $(messageEmailChanged).html(),
                             $(messageEmailChangedBody).html());
-                        $(accountPreferencesContainer).jqmHide();
+                        finishSave();
                     } else {
                         sakai.api.Util.notification.show(
                             $(messageEmailChanged).html(),
@@ -392,13 +394,20 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                     $(accountPreferencesPasswordChange).submit();
                 }
             }
+            if (emailChanges) {
+                $(accountPreferencesEmailChange).submit();
+            }
         });
 
         /**
          * Hides the dialog box when saving is complete and reloads the page if needed
          */
         var finishSave = function(){
-            if (!preferencesChanges && !privacyChanges && !passwordChanges){
+            if (!preferencesChanges &&
+                !privacyChanges &&
+                !passwordChanges &&
+                !emailChanges) {
+
                 $(accountPreferencesContainer).jqmHide();
                 if (pageReload){
                     window.setTimeout(function(){
@@ -512,6 +521,11 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             enableElements($(saveButton));
             preferencesChanges = true;
             e.preventDefault();
+        });
+
+        $('#accountpreferences_email').on('keyup', function(e) {
+            enableElements($(saveButton));
+            emailChanges = true;
         });
 
         var hideAllPanes = function(){
