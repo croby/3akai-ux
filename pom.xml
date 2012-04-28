@@ -12,10 +12,16 @@
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <relativePath />
+    <version>7</version>
+  </parent>
   <groupId>com.rsmart.nakamura</groupId>
   <artifactId>com.rsmart.nakamura.uxloader-wrap</artifactId>
   <packaging>pom</packaging>
-  <version>1.1.5-rsmart-SNAPSHOT</version>
+  <version>1.2.0-rsmart-SNAPSHOT</version>
   <name>Sakai 3 UX Loader Wrapper</name>
   <description>Loads the Sakai 3 UI into the JCR</description>
   <url>http://github.com/rSmart/3akai-ux</url>
@@ -44,13 +50,6 @@
           <url>s3://rsmart-dev/artifacts/maven/release</url>
           <layout>default</layout>
         </repository>
-        <!--
-        <site>
-            <id>sakai-site</id>
-            <name>Sakai release Site</name>
-            <url>scp://source.sakaiproject.org/var/www/html/release/nakamura/${project.version}</url>
-        </site>
-        -->
   </distributionManagement>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -15,7 +15,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
+require(["jquery", "sakai/sakai.api.core", "underscore"], function($, sakai, _) {
 
     sakai_global.inbox = function(tuid, showSettings, widgetData, state) {
 
@@ -60,7 +60,13 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
          */
         var toggleGlobalButtons = function(enable) {
             if (enable) {
-                $inbox_mark_as_read.removeAttr("disabled");
+                var $unreadMessages = $inbox_message_list.find('input[type="checkbox"]:visible:checked')
+                .parents('.inbox_items_container.unread');
+                if ($unreadMessages.length) {
+                    $inbox_mark_as_read.removeAttr('disabled');
+                } else {
+                    $inbox_mark_as_read.attr('disabled', 'disabled');
+                }
                 $inbox_delete_selected.removeAttr("disabled");
             } else {
                 $inbox_mark_as_read.attr("disabled", "disabled");
@@ -106,14 +112,14 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         });
 
         var handleGlobalButtons = function() {
-            if ($(".inbox_items_container input[type='checkbox']:checked").length > 0) {
+            if ($(".inbox_items_container input[type='checkbox']:checked", $rootel).length > 0) {
                 toggleGlobalButtons(true);
             } else {
                 toggleGlobalButtons(false);
             }
         }        
         
-        $(".inbox_items_container input[type='checkbox']").live("change", handleGlobalButtons);
+        $(".inbox_items_container input[type='checkbox']", $rootel).live("change", handleGlobalButtons);
         
         /** Sending messages **/
         var sendMessageFinished = function() {
@@ -126,6 +132,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 $(".inbox_accepted", $rootel).show();
                 sakai.api.User.acceptContactInvite(currentMessage.from.userObj.uuid, function() {
                     currentMessage.from.connectionState = "ACCEPTED";
+                    sakai.data.me.contacts.accepted++;
+                    $(window).trigger('lhnav.updateCount', ['contacts', sakai.data.me.contacts.accepted, false]);
                 });
             } else {
                 $(".inbox_ignored", $rootel).show();
@@ -158,13 +166,14 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             if (widgetData.category === "invitation") {
                 determineInviteStatus(messageToShow);
             }
-            $inbox_box_title.text(messageToShow.subject);
+            $inbox_box_title.text(sakai.api.Util.applyThreeDots(messageToShow.subject, 310));
             sakai.api.Util.TemplateRenderer($inbox_show_message_template, {
                 message:messageToShow,
                 me: {
                     name: sakai.api.User.getDisplayName(sakai.api.User.data.me.profile),
                     picture: sakai.api.Util.constructProfilePicture(sakai.api.User.data.me)
-                }
+                },
+                box: widgetData.box
             }, $inbox_show_message);
             $("#sendmessage_to_autoSuggest").data(cacheAutoSuggestData);
             if (!currentMessage.read) {
@@ -256,6 +265,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 $inbox_search_term = $($inbox_search_term.selector);
                 $inbox_search_term.remove();
             }
+            toggleGlobalButtons(false);
+            $inbox_select_checkbox.removeAttr('checked');
             $inbox_search_messages.removeAttr("disabled");
             // Disable the previous infinite scroll
             if (infinityScroll){
@@ -272,16 +283,17 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                     callback(true, data);
                 });
             }, {}, function(items, total){
-                $(".inbox_select_all_container:visible input").removeAttr("disabled");
+                $('.inbox_select_all_container:visible input', $rootel).removeAttr('disabled');
                 handleGlobalButtons();
                 return sakai.api.Util.TemplateRenderer($inbox_message_list_item_template, {
                     sakai: sakai,
                      _: _,
                     results: items,
-                    search: searchTerm
+                    search: searchTerm,
+                    box: widgetData.box
                 });
             }, function(){
-                $(".inbox_select_all_container:visible input").attr("disabled", true);
+                $('.inbox_select_all_container:visible input', $rootel).attr('disabled', true);
                 handleGlobalButtons();
                 $inbox_message_list.html(sakai.api.Util.TemplateRenderer($inbox_message_list_item_empty_template, {
                     "widgetData": widgetData,
@@ -323,7 +335,13 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         var showReply = function() {
             $inbox_show_message_reply_fields = $($inbox_show_message_reply_fields.selector);
             var replyButtonText = sakai.api.i18n.getValueForKey("REPLY", "inbox");
-            $(window).trigger("initialize.sendmessage.sakai", [currentMessage.replyAll, $inbox_show_message_reply_fields, handleReplyFinished, "Re: " + currentMessage.subject, null, true, currentMessage.id, replyButtonText]);
+            var replyText = sakai.api.i18n.getValueForKey("RE", "inbox");
+            var messageSubject = currentMessage.subject;
+            // Check whether the message starts with Reply. If not, add it to the subject line
+            if(currentMessage.subject.substring(0, replyText.length) !== replyText){
+                messageSubject = replyText + " " + currentMessage.subject;
+            }
+            $(window).trigger("initialize.sendmessage.sakai", [currentMessage.replyAll, $inbox_show_message_reply_fields, handleReplyFinished, messageSubject, null, true, currentMessage.id, replyButtonText]);
             $inbox_show_message_reply_fields.show();
         };
 
@@ -458,6 +476,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                         if ((messages && !messages[all.message]) || !messages) {
                             sakai.api.Communication.getMessage(all.message, widgetData.box, sakai.data.me, function(message){
                                 if (message){
+                                    messages[all.message] = message;
                                     currentMessage = message;
                                     showMessage(message, all.hasOwnProperty("reply"));
                                 } else {

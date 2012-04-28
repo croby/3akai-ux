@@ -814,6 +814,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-ui"], function($, sakai) {
             if (title) {
                 $("#paget_title_only", $rootel).html(" " + title);
             }
+            sakai.api.Util.bindDialogFocus(changeLayoutDialog);
             $(changeLayoutDialog, $rootel).jqmShow();
         };
 
@@ -959,6 +960,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-ui"], function($, sakai) {
         
         var showAddWidgetDialog = function(iTuid){
             if (iTuid === tuid) {
+                sakai.api.Util.bindDialogFocus(addGoodiesDialog);
                 $(addGoodiesDialog, $rootel).jqmShow();
             }
         };
@@ -999,13 +1001,8 @@ require(["jquery", "sakai/sakai.api.core", "jquery-ui"], function($, sakai) {
             }
         };
 
-        if (document.location.pathname === "/dev/group.html"){
-            $(window).bind("init.dashboard.sakai", function(e, path, editmode, propertyname, fixedContainer) {
-                init(path, editmode, propertyname, fixedContainer);
-            });
-        } else {
-            init("", true, "personalportal", false);
-        }
+        // Dashboards are only used in the private space these days
+        init("/~" + sakai.data.me.user.userid + "/private/privspace/", true, "personalportal", false);
 
         /**
          * Send out an event to indicate that the dashboard widget has been

@@ -163,7 +163,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 }
             }
             var searchterm = contentData.data["sakai:pooled-content-file-name"].substring(0,400) + " " + managersList + " " + viewersList;
-            searchquery = prepSearchTermForURL(searchterm);
+            var searchquery = prepSearchTermForURL(searchterm);
             if (contentData.data["sakai:tags"]){
                 searchquery = searchquery + " OR " + contentData.data["sakai:tags"].join(" OR ");
             }
@@ -229,7 +229,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
 
         $(relatedcontentContent).live("click", function(){
             $.bbq.pushState($(this).attr("data-href"));
-        })
+        });
 
         // Indicate that the widget has finished loading
         $(window).trigger("ready.relatedcontent.sakai", {});

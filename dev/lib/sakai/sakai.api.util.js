@@ -33,13 +33,13 @@ define(
         "sakai/sakai.api.i18n",
         //"config/config_custom",
         "config/dynamicconfig",
+        "underscore",
         "misc/trimpath.template",
-        "misc/underscore",
         "jquery-plugins/jquery.ba-bbq",
         "jquery-plugins/jquery.validate",
         "jquery-ui"
     ],
-    function($, sakai_serv, sakai_l10n, sakai_i18n, sakai_conf) {
+    function($, sakai_serv, sakai_l10n, sakai_i18n, sakai_conf, _) {
 
     var sakai_util = {
 
@@ -289,25 +289,30 @@ define(
             var setTags = function(tagLocation, tags, setTagsCallback) {
                 // set the tag on the entity
                 var doSetTags = function(tags, doSetTagsCallback) {
-                    var setTagsRequests = [];
+                    var tagArray = [];
                     $(tags).each(function(i,val) {
-                        setTagsRequests.push({
-                            "url": tagLocation,
-                            "method": "POST",
-                            "parameters": {
-                                "key": "/tags/" + val,
-                                ":operation": "tag"
-                            }
-                        });
+                        tagArray.push("/tags/" + val);
                     });
-                    sakai_serv.batch(setTagsRequests, function(success, data) {
-                        if (!success) {
-                            debug.error(tagLocation + " failed to be tagged as " + val);
+                    $.ajax({
+                        url: tagLocation,
+                        type: "POST",
+                        traditional: true,
+                        data: {
+                            ":operation": "tag",
+                            "key": tagArray
+                        },
+                        success: function(data) {
+                            if ($.isFunction(doSetTagsCallback)) {
+                                doSetTagsCallback(true);
+                            }
+                        },
+                        error: function(xhr){
+                            debug.error(tagLocation + " failed to be tagged as " + tagArray);
+                            if ($.isFunction(doSetTagsCallback)) {
+                                doSetTagsCallback(false);
+                            }
                         }
-                        if ($.isFunction(doSetTagsCallback)) {
-                            doSetTagsCallback(success);
-                        }
-                    }, false, true);
+                    });
                 };
 
                 if (tags.length) {
@@ -347,7 +352,7 @@ define(
                             debug.error(val + " tag failed to be removed from " + tagLocation);
                         }
                         if ($.isFunction(deleteTagsCallback)) {
-                            deleteTagsCallback();
+                            deleteTagsCallback(success);
                         }
                     }, false, true);
                 } else {
@@ -399,10 +404,10 @@ define(
                     finalTags.push(val);
                 }
             });
-            deleteTags(tagLocation, tagsToDelete, function() {
-                setTags(tagLocation, tagsToAdd, function(success) {
+            deleteTags(tagLocation, tagsToDelete, function(deleteSuccess) {
+                setTags(tagLocation, tagsToAdd, function(addSuccess) {
                     if ($.isFunction(callback)) {
-                        callback(success, finalTags);
+                        callback(addSuccess || deleteSuccess, finalTags);
                     }
                 });
             });
@@ -478,9 +483,9 @@ define(
                         } else if ($.isPlainObject(structure[i])) {
                             structure[i] = loopAndReplace(structure[i], variable, replace);
                         } else if (_.isArray(structure[i])) {
-                            $.each(structure[i], function(j, elt) {
-                                structure[i][j] = loopAndReplace(elt, variable, replace);
-                            });
+                            for (var j = 0; j < structure[i].length; j++){
+                                structure[i][j] = loopAndReplace(structure[i][j], variable, replace);
+                            }
                         }
                         if (i.indexOf(toReplace) !== -1) {
                             var newKey = i.replace(regex, replace);
@@ -561,12 +566,17 @@ define(
          * @param {String} content Content in the form of a string
          * @return{Boolean} True indicates that content is present, False indicates that there is no content
          */
-        determineEmptyContent: function(content){
-            var textPresent = $.trim($("<div>").html(content).text());
-            var elementArr = ["div", "img", "ol", "ul", "li", "hr", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "em", "strong", "code", "dl", "dt", "dd", "table", "tr", "th", "td", "iframe", "frame", "form", "input", "select", "option", "blockquote", "address"];
+        determineEmptyContent: function(content) {
+            var $el = $('<div/>').html(content);
+            // Filter out tinyMCE instances
+            $('.mceEditor', $el).each(function(index, item) {
+                $(item).remove();
+            });
+            var textPresent = $.trim($el.text());
+            var elementArr = ['img', 'iframe', 'frame', 'input', 'select', 'option'];
             var containsElement = false;
-            $.each(elementArr, function(i, el){
-                if(content.indexOf(el) != -1){
+            $.each(elementArr, function(i, el) {
+                if ($(el, $el).length) {
                     containsElement = true;
                     return false;
                 }
@@ -685,6 +695,8 @@ define(
                     htmlCode += '<div class="s3d-inset-shadow-container"><img src="/dev/images/progress_bar.gif"/></div></div>';
                     var notification = $(htmlCode);
                     $('body').append(notification);
+                    // position progress indicator at users scroll position
+                    sakai_util.positionDialogBox($('#sakai_progressindicator'));
                     $("#sakai_progressindicator").jqm({
                         modal: true,
                         overlay: 20,
@@ -854,26 +866,6 @@ define(
 
         },
 
-        /**
-         * Shorten a string and add 3 dots if the string is too long
-         *
-         * @param {String} input The string you want to shorten
-         * @param {Int} maxlength Maximum length of the string
-         * @returns {String} The shortened string with 3 dots
-         */
-        shortenString : function(input, maxlength){
-
-            var return_string = "";
-
-            if ((typeof input === "string") && (input.length > maxlength)) {
-                return_string = input.substr(0, maxlength) + "...";
-            } else {
-                return_string = input;
-            }
-
-            return return_string;
-        },
-
         include : {
             /**
              * Generic function that will insert an HTML tag into the head of the document. This
@@ -992,8 +984,8 @@ define(
                     dre = /(^[0-9\-\.\/]{5,}$)|[0-9]+:[0-9]+|( [0-9]{4})/i,
                     ore = /^0/,
                     // convert all to strings and trim()
-                    x = a ? a.toString().toLowerCase().replace(sre, '') || '' : '';
-                    y = b ? b.toString().toLowerCase().replace(sre, '') || '' : '';
+                    x = a ? a.toString().toLowerCase().replace(sre, '') || '' : '',
+                    y = b ? b.toString().toLowerCase().replace(sre, '') || '' : '',
                     // chunk/tokenize
                     xN = x.replace(re, String.fromCharCode(0) + "$1" + String.fromCharCode(0)).replace(/\0$/,'').replace(/^\0/,'').split(String.fromCharCode(0)),
                     yN = y.replace(re, String.fromCharCode(0) + "$1" + String.fromCharCode(0)).replace(/\0$/,'').replace(/^\0/,'').split(String.fromCharCode(0)),
@@ -1701,6 +1693,7 @@ define(
                 html4.ATTRIBS["a::role"] = 0;
                 html4.ATTRIBS["ul::aria-hidden"] = 0;
                 html4.ATTRIBS["ul::role"] = 0;
+                html4.ATTRIBS['iframe::src'] = 0;
 
                 // A slightly modified version of Caja's sanitize_html function to allow style="display:none;"
                 var sakaiHtmlSanitize = function(htmlText, opt_urlPolicy, opt_nmTokenPolicy) {
@@ -1808,20 +1801,20 @@ define(
                 return false;
             },
 
-            showPage : function(callback){
+            showPage : function(callback) {
                 // Show the background images used on anonymous user pages
-                if ($.inArray(window.location.pathname, sakai_conf.requireAnonymous) > -1){
-                    $('html').addClass("requireAnon");
+                if ($.inArray(window.location.pathname, sakai_conf.requireAnonymous) > -1) {
+                    $('html').addClass('requireAnon');
                 // Show the normal background
                 } else {
-                    $('html').addClass("requireUser");
+                    $('html').addClass('requireUser');
                 }
                 sakai_util.loadSkinsFromConfig();
 
                 // Put the title inside the page
-                var pageTitle = require("sakai/sakai.api.i18n").getValueForKey(sakai_conf.PageTitles.prefix);
-                if (sakai_conf.PageTitles.pages[window.location.pathname]){
-                    pageTitle += " " + require("sakai/sakai.api.i18n").getValueForKey(sakai_conf.PageTitles.pages[window.location.pathname]);
+                var pageTitle = require('sakai/sakai.api.i18n').getValueForKey(sakai_conf.PageTitles.prefix);
+                if (sakai_conf.PageTitles.pages[window.location.pathname]) {
+                    pageTitle += ' ' + require('sakai/sakai.api.i18n').getValueForKey(sakai_conf.PageTitles.pages[window.location.pathname]);
                 }
                 document.title = pageTitle;
                 // Show the actual page content
@@ -1936,6 +1929,77 @@ define(
                     }
                 });
             });
+        },
+
+        /**
+         * Positions the dialog box at the users scroll position
+         *
+         * @param el {String} a jquery selector or jquery object, to position
+         * @param offset {Integer} optional numeric value to add to the dialog position offset
+         */
+        positionDialogBox : function(el, offset) {
+            var $el = el;
+            if (!(el instanceof jQuery)){
+                $el = $(el);
+            }
+
+            var dialogOffset = 50;
+            if (offset && _.isNumber(offset)){
+                dialogOffset = offset;
+            }
+
+            var htmlScrollPos = $("html").scrollTop();
+            var docScrollPos = $(document).scrollTop();
+            if (htmlScrollPos >= 0) {
+                $el.css({"top": htmlScrollPos + dialogOffset + "px"});
+            } else if (docScrollPos >= 0) {
+                $el.css({"top": docScrollPos + dialogOffset + "px"});
+            }
+        },
+
+        /**
+         * Sets up events to keep keyboard focus within the dialog box and close it when the escape key is pressed
+         *
+         * @param dialogContainer {String} a jquery selector or jquery object which is the dialog container
+         * @param ignoreElements {String} an optional jquery selector for start/end elements to be ignored
+         * @param closeFunction {function} an optional function to be called when the user hits the escape key
+         */
+        bindDialogFocus : function(dialogContainer, ignoreElements, closeFunction) {
+            var origFocus = $(":focus");
+            var $dialogContainer = dialogContainer;
+            if (!(dialogContainer instanceof jQuery)){
+                $dialogContainer = $(dialogContainer);
+            }
+
+            var bindFunction = function(e) {
+                if ($dialogContainer.is(":visible") && $dialogContainer.has(":focus").length && e.which === $.ui.keyCode.ESCAPE) {
+                    if ($.isFunction(closeFunction)){
+                        closeFunction();
+                    } else {
+                        $dialogContainer.jqmHide();
+                    }
+                    origFocus.focus();
+                } else if ($dialogContainer.is(":visible") && e.which === $.ui.keyCode.TAB) {
+                    // determine which elements are keyboard navigable
+                    var $focusable = $("a:visible, input:visible, button:visible:not(:disabled), textarea:visible", $dialogContainer);
+                    if (ignoreElements){
+                        $focusable = $focusable.not(ignoreElements);
+                    }
+                    var $focused = $(":focus");
+                    var index = $focusable.index($focused);
+                    if (e.shiftKey && $focusable.length && (index === 0)) {
+                        // if shift tabbing from the start of the dialog box, shift focus to the last element
+                        $focusable.get($focusable.length - 1).focus();
+                        return false;
+                    } else if (!e.shiftKey && $focusable.length && (index === $focusable.length - 1)) {
+                        // if tabbing from the end of the dialog box, shift focus to the first element
+                        $focusable.get(0).focus();
+                        return false;
+                    }
+                }
+            };
+            $(dialogContainer).unbind("keydown");
+            $(dialogContainer).keydown(bindFunction);
         },
 
         /**
@@ -2260,6 +2324,8 @@ define(
              * @param {Object} opts options to pass through to jquery.validate
              *    NOTE: There is one additional option you can pass in -- an error callback function
              *    When there is an error in validation detected, it will be called
+             *    NOTE: Additional option 'errorsShown' can hold a function that is executed after
+             *    the error labels have been displayed on screen.
              * @param {Function} [invalidCallback] The function to call when an error is detected
              * @param {Boolean} [insertAfterLabel] Insert the error span after the label, not before
              */
@@ -2355,6 +2421,9 @@ define(
                         }
                     });
                     this.defaultShowErrors();
+                    if ($.isFunction(options.errorsShown)) {
+                        options.errorsShown();
+                    }
                 };
 
                 // Set up the form with these options in jquery.validate
@@ -2398,42 +2467,50 @@ define(
              * Sets and overrides default parameters for the jQuery Droppable plugin
              * @param {Object} params Optional parameters that override defaults
              */
-            setDraggableParameters: function(){
+            setDraggableParameters: function(params) {
                 return {
+                    distance: 30,
                     revert: true,
                     revertDuration: 0,
                     scrollSensitivity: 100,
                     opacity: 0.5,
-                    helper: "clone",
-                    cursor: "move",
-                    zindex: 10000,
+                    cursor: 'move',
+                    zIndex: 100000,
                     cursorAt: {
                         top: 10,
                         left: 5
                     },
                     stop: function(event, ui) {
-                        $(".s3d-draggable-draggingitems").remove();
-                        if($(this).data("stopdragevent")){
-                            $(window).trigger($(this).data("stopdragevent"), sakai_util.Draggable.getDraggableData(ui.helper));
+                        sakai_util.Draggable.removeIFrameFix();
+                        $('.s3d-draggable-draggingitems').remove();
+                        $(window).trigger('stop.drag.sakai');
+                        if ($(this).data('stopdragevent')) {
+                            $(window).trigger($(this).data('stopdragevent'), sakai_util.Draggable.getDraggableData(ui.helper));
                         }
                     },
-                    start: function(event, ui){
-                        $("body").append("<div class='s3d-draggable-draggingitems'>" + sakai_util.Draggable.getDraggableMessage($(ui.helper).children().length) + "</div>");
-                        if($(this).data("startdragevent")){
-                            $(window).trigger($(this).data("startdragevent"), sakai_util.Draggable.getDraggableData(ui.helper));
+                    start: function(event, ui) {
+                        sakai_util.Draggable.setIFrameFix();
+                        $('body').append('<div class="s3d-draggable-draggingitems">' + sakai_util.Draggable.getDraggableMessage($(ui.helper).children().length) + '</div>');
+                        $(window).trigger('start.drag.sakai');
+                        if ($(this).data('startdragevent')) {
+                            $(window).trigger($(this).data('startdragevent'), sakai_util.Draggable.getDraggableData(ui.helper));
                         }
                     },
-                    helper: function(){
-                        var selected = $('.s3d-draggable-select:checked').parents('li');
-                        if (selected.length === 0) {
-                          selected = $(this);
+                    helper: function() {
+                        var $selected = $('.s3d-draggable-select:checked')
+                            .parents('li:not(.contentauthoring_row_container)');
+                        if ($selected.length === 0) {
+                          $selected = $(this);
                         }
-                        var container = $('<div/>').attr('id', 's3d-draggeditems-container');
-                        container.append(selected.clone());
-                        return container;
+                        var $container = $('<div/>').attr('id', 's3d-draggeditems-container');
+                        $container.append($selected.clone());
+                        return $container;
                     },
-                    drag: function(ev, data){
-                        $(".s3d-draggable-draggingitems").offset({left:data.offset.left - 10,top:data.offset.top - 12});
+                    drag: function(ev, data) {
+                        $('.s3d-draggable-draggingitems').offset({
+                            left: data.offset.left - 10,
+                            top: data.offset.top - 12
+                        });
                     }
                 };
             },
@@ -2448,14 +2525,37 @@ define(
                         if (!$(draggable).hasClass("ui-draggable")) {
                             // HTML overrides default, JS overrides HTML
                             // Override default parameters with attribute defined parameters
-                            var htmlParams = $.extend(true, sakai_util.Draggable.setDraggableParameters(), $(draggable).data());
+                            var htmlParams = $.extend(true, sakai_util.Draggable.setDraggableParameters(params), $(draggable).data());
                             // Override attribute defined parameters with JS defined ones
                             params = $.extend(true, htmlParams, params);
                             $(".s3d-draggable-container", $container || $("html")).draggable(params);
                         }
                     });
                 }
+            },
+
+            /**
+             * When dragging elements over the screen, there are issues with iframes as they can make the
+             * drag action hang when hovering over them. Therefore, we apply an almost transparent div on
+             * top of the screen. This avoids the iframe events to be triggered and allows for smooth
+             * dragging and dropping
+             */
+            setIFrameFix: function() {
+                $('<div class="ui-resizable-iframeFix" style="background: #fff;"></div>').css({
+                    width: $(document).width() + 'px', height: $(document).height() + 'px',
+                    top: '0px', left: '0px',
+                    position: 'absolute', opacity: '0.001', zIndex: 100000
+                }).appendTo('body');
+            },
+
+            /**
+             * Remove the transparant div that makes sure that dragging is smooth despite iFrames
+             * being present on the screen
+             */
+            removeIFrameFix: function() {
+                $('div.ui-resizable-iframeFix').remove();
             }
+
         },
         Droppable: {
             /**
@@ -2498,6 +2598,31 @@ define(
                     });
                 }
             }
+        },
+
+        /**
+         * Do a deep search and replace in an object
+         *
+         * @param {Object} obj The object to replace values in
+         * @param {String} toReplace The value to search for
+         * @param {String} replacement The string to replace the value with
+         * @return {Object} The object with the string replaced in all occurrences
+         */
+        replaceInObject: function(obj, toReplace, replacement) {
+            var ret = false;
+            if ($.isPlainObject(obj)) {
+                 ret = $.extend(true, {}, obj);
+            } else if ($.isArray(obj)) {
+                ret = $.merge([], obj);
+            }
+            $.each(ret, function(key, val) {
+                if ($.isPlainObject(val) || $.isArray(val)) {
+                    ret[key] = sakai_util.replaceInObject(val, toReplace, replacement);
+                } else if (_.isString(val) && val.indexOf(toReplace) !== -1) {
+                    ret[key] = val.replace(toReplace, replacement);
+                }
+            });
+            return ret;
         }
     };
 

@@ -180,7 +180,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             if (json) {
                 json.tuidFrame = basicltiSettingsPreviewId;
                 $(basicltiMainContainer, rootel).html(sakai.api.Util.TemplateRenderer($basicltiSettingsPreviewTemplate, json));
-                json.launchDataUrl = sakai.api.Widgets.widgetLoader.widgets[tuid].placement + ".launch.html";
+                json.launchDataUrl = sakai.api.Widgets.getWidgetDataStorageURL(tuid) + ".launch.html";
                 if (sakai_global.group) {
                     json.launchDataUrl += "?groupid=" + sakai_global.group.groupData["sakai:group-id"];
                 }
@@ -259,7 +259,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
          */
         var saveRemoteContent = function(){
             var  saveContentAjax = function(json_data) {
-                var url = sakai.api.Widgets.widgetLoader.widgets[tuid].placement;
+                var url = sakai.api.Widgets.getWidgetDataStorageURL(tuid);
                 $.ajax({
                     type: "POST",
                     url: url,
@@ -493,11 +493,12 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 for (var i = 0; i < data.toolList.length; i++) {
                     // Our i18n keys for the tools are formatted as: sakai.announcements -> CLE_SAKAI_ANNOUNCEMENTS
                     var key = "CLE_" + data.toolList[i].replace(/\./g,"_").toUpperCase();
+                    var toolname = "";
                     if (sakai.config.sakai2ToolNames && sakai.config.sakai2ToolNames[data.toolList[i]]) {
-                        var toolname = sakai.config.sakai2ToolNames[data.toolList[i]];
+                        toolname = sakai.config.sakai2ToolNames[data.toolList[i]];
                     }
                     else {
-                        var toolname = sakai.api.i18n.getValueForKey(key, "sakai2tools");
+                        toolname = sakai.api.i18n.getValueForKey(key, "sakai2tools");
                         if (toolname === false) {
                             toolname = data.toolList[i];
                         }

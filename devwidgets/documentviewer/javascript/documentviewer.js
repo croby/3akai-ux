@@ -233,7 +233,7 @@ require(["jquery", "sakai/sakai.api.core", "/devwidgets/documentviewer/lib/docum
             if (!url){
                 url = "/devwidgets/video/jwplayer/player.swf";
             }
-            var so = new SWFObject(url,'ply', '100%', params.height || '560','9','#000000');
+            var so = new SWFObject(url,'ply', '100%', params.height || '100%','9','#000000');
             so.addParam('allowfullscreen','true');
             if (params.allowscriptaccess) {
                 so.addParam('allowscriptaccess', params.allowscriptaccess);
@@ -264,7 +264,7 @@ require(["jquery", "sakai/sakai.api.core", "/devwidgets/documentviewer/lib/docum
                 renderAudioPlayer(data);
             } else if (mimeType === "application/x-shockwave-flash") {
                 renderFlashPlayer(data);
-            } else if (mimeType === "text/html" || mimeType.substring(0, 5) === "text/") {
+            } else if (mimeType === "text/html" || mimeType === "text/plain" || mimeType ==="text/tab-separated-values" ) {
                 renderHTMLPreview(data);
             } else if (mimeType === "x-sakai/link"){
                 var pUrl = data["sakai:preview-url"];

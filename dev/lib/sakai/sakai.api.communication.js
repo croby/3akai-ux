@@ -37,9 +37,10 @@ define(
         "sakai/sakai.api.server",
         //"config/config_custom",
         "config/dynamicconfig",
+        "underscore",
         "jquery-plugins/jquery.autolink"
     ],
-    function($, sakai_user, sakai_l10n, sakai_i18n, sakai_util, sakai_server, sakai_conf) {
+    function($, sakai_user, sakai_l10n, sakai_i18n, sakai_util, sakai_server, sakai_conf, _) {
 
     var sakaiCommunicationsAPI =  {
         /**
@@ -317,7 +318,7 @@ define(
                 var path = message.path;
                 if (path.substring(0, 2) === "a:"){
                     path = "~" + path.substring(2);
-                };                 
+                }
                 var req = {url: path + ".json", method: "POST", parameters: {"sakai:read": "true"}};
                 requests.push(req);
             });
@@ -390,10 +391,13 @@ define(
                     newMsg.box = msg["sakai:messagebox"];
                     newMsg.category = msg["sakai:category"];
                     newMsg.date = sakai_l10n.transformDateTimeShort(sakai_l10n.fromEpoch(msg["_created"], sakai_user.data.me));
-                    newMsg.timeago = $.timeago(newMsg.date);
-                    newMsg.id = msg.id;
+                    newMsg.timeago = $.timeago(new Date(msg["_created"]));
+                    newMsg.id = msg.id || msg['sakai:id'];
                     newMsg.read = msg["sakai:read"];
-                    newMsg.path = msg["_path"];
+                    newMsg.path = msg['_path'];
+                    if (msg['_path'].substring(0,2) === 'a:') {
+                        newMsg.path = msg['_path'].replace('a:', '/~');
+                    }
                     if (msg.previousMessage) {
                         newMsg.previousMessage = sakaiCommunicationsAPI.processMessages([msg.previousMessage]);
                         $.each(newMsg.previousMessage, function(i,val){

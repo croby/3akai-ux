@@ -26,7 +26,7 @@
 /*global $ */
 
 // Namespaces
-require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"], function($, sakai){
+require(["jquery", "sakai/sakai.api.core", "underscore", "/dev/javascript/content_profile.js"], function($, sakai, _){
 
     /**
      * @name sakai_global.contentpermissions
@@ -47,7 +47,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
         // CONFIGURATION VARIABLES //
         /////////////////////////////
 
-        var contentpermissionsSelectable = ".contentpermissions_selectable > input"
+        var contentpermissionsSelectable = ".contentpermissions_selectable > input";
         var contentData = sakai_global.content_profile.content_data;
         var contentPermissionsEditList = "li.contentpermissions_edit";
         var contentpermissionsMemberPermissions = ".contentpermissions_member_permissions";
@@ -85,6 +85,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
                     "visibility": newVisibilityVal,
                     "content": sakai_global.content_profile.content_data.data["sakai:pooled-content-file-name"]
                 }));
+                sakai.api.Util.bindDialogFocus($("#contentpermissions_warning_container"));
                 $("#contentpermissions_warning_container").jqmShow();
             }
         };
@@ -168,7 +169,6 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
             } else {
                 if(!globalPermissionsChanged){
                     closeOverlay();
-                    $(window).trigger("load.content_profile.sakai");
                 }else {
                     sakai.api.Util.notification.show(sakai.api.i18n.Widgets.getValueForKey("contentpermissions","","CANNOT_SAVE_SETTINGS"), sakai.api.i18n.Widgets.getValueForKey("contentpermissions","","THERE_SHOULD_BE_AT_LEAST_ONE_MANAGER"));
                 }
@@ -178,9 +178,9 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
         var finishSavePermissions = function(){
             closeOverlay();
             if (globalPermissionsChanged || changesMade) {
+                $(window).trigger('sakai.entity.ready');
                 sakai.api.Util.notification.show($("#contentpermissions_permissions").text(), $("#contentpermissions_permissionschanged").text());
             }
-            $(window).trigger("load.content_profile.sakai");
         };
 
         /**
@@ -198,7 +198,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
                     type: "POST",
                     data: dataObj,
                     success: function(){
-                        sakai_global.content_profile.content_data.data["sakai:permissions"] = newPermissions
+                        sakai_global.content_profile.content_data.data["sakai:permissions"] = newPermissions;
                         saveMemberPermissions();
                     }
                 });
@@ -230,7 +230,6 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
                         }
                     ];
                     sakai.api.Groups.removeUsersFromGroup(sakai.api.Content.Collections.getCollectionGroupId(sakai_global.content_profile.content_data.data), userObj, sakai.data.me, function(){
-                        $(window).trigger("load.content_profile.sakai");
                         $itemToDelete.remove();
                     });
                 } else {
@@ -251,7 +250,6 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
                     type: "POST",
                     data: userToDelete,
                     success: function(){
-                        $(window).trigger("load.content_profile.sakai");
                         $itemToDelete.remove();
                     }
                 });
@@ -359,7 +357,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
          */
         var renderMemberList = function(){
             sakai.api.Util.TemplateRenderer("contentpermissions_content_template", {
-                title: sakai_global.content_profile.content_data.data["sakai:pooled-content-file-name"],
+                title: sakai.api.Util.Security.safeOutput(sakai_global.content_profile.content_data.data["sakai:pooled-content-file-name"]),
                 contentData: removeDuplicateUsersGroups(contentData),
                 sakai: sakai,
                 defaultPermission: defaultPermissionPassed
@@ -414,7 +412,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
 
             $(".contentpermissions_permissions_container .s3d-actions-delete").live("click", doDelete);
             $("#contentpermissions_apply_permissions").live("click", showWarning);
-            $("#contentpermissions_members_autosuggest_sharebutton").live("click", doShare)
+            $("#contentpermissions_members_autosuggest_sharebutton").live("click", doShare);
         };
 
         /**
@@ -433,6 +431,7 @@ require(["jquery", "sakai/sakai.api.core", "/dev/javascript/content_profile.js"]
                 toTop: true,
                 zIndex: 12000
             });
+            sakai.api.Util.bindDialogFocus($("#contentpermissions_container"));
             $("#contentpermissions_container").jqmShow();
         };
 

@@ -2,7 +2,7 @@ require(
     [
     "jquery",
     "sakai/sakai.api.core",
-    "../../../../tests/qunit/js/qunit.js",
+    "qunitjs/qunit",
     "../../../../tests/qunit/js/sakai_qunit_lib.js",
     "../../../../tests/qunit/js/dev.js",
     "../../../../tests/qunit/js/devwidgets.js"
@@ -34,25 +34,19 @@ require(
             "name": "img",
             "type": "string"
         }, {
+            "name": "imghover",
+            "type": "string"
+        }, {
             "name": "multipleinstance",
             "type": "string"
         }, {
             "name": "personalportal",
             "type": "boolean"
         }, {
-            "name": "showinmedia",
-            "type": "boolean"
-        }, {
-            "name": "showinsakaigoodies",
-            "type": "boolean"
-        }, {
             "name": "showinsidebar",
             "type": "boolean"
         }, {
             "name": "scrolling",
-            "type": "boolean"
-        }, {
-            "name": "siteportal",
             "type": "boolean"
         }, {
             "name": "url",
@@ -152,7 +146,6 @@ require(
         };
 
         var makeWidgetPropertiesTest = function(widgetObj) {
-            stop();
             asyncTest(widgetObj.id, function() {
                 checkWidgetProperties(widgetObj, function() {
                     start();
@@ -221,7 +214,7 @@ require(
 
         var makeWidgetURLTest = function(widgetName, subprops) {
             asyncTest(widgetName, subprops.length, function() {
-                var counter = 0;
+                 var counter = 0;
                  testAllProperties(subprops, widgetName, function() {
                      counter++;
                      if (counter === subprops.length) {
@@ -249,6 +242,7 @@ require(
             testWidgetProperties();
             testWidgetURLs();
             QUnit.start();
+            $(window).trigger("addlocalbinding.qunit.sakai");
         };
 
         if (sakai_global.qunit && sakai_global.qunit.ready) {
@@ -258,7 +252,6 @@ require(
                 testWidgets();
             });
         }
-
 
     });
 });
