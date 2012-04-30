@@ -29,7 +29,8 @@
  */
 define(
     [
-        "config/config_custom",
+        //"config/config_custom",
+        "config/dynamicconfig",
         "misc/l10n/globalize",
         "misc/l10n/detect_timezone"
     ],

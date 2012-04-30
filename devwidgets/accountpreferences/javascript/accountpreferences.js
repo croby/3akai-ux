@@ -264,14 +264,6 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         });
 
         //////////////////////////////
-        // Change Email             //
-        //////////////////////////////
-        var initEmailTemplate = function() {
-          
-        }
-
-
-        //////////////////////////////
         // Change Country, Timezone //
         //////////////////////////////
 
@@ -387,6 +379,26 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             });
         };
 
+        var saveEmail = function() {
+            var emailVal = $.trim($('#accountpreferences_email').val());
+            var data = {'email': emailVal};
+            sakai.api.User.updateUserProfile(
+                sakai.data.me.user.userid,
+                "basic", data, false, {}, false, function(success, data) {
+                    if (success) {
+                        sakai.api.Util.notification.show(
+                            $(messageEmailChanged).html(),
+                            $(messageEmailChangedBody).html());
+                        $(accountPreferencesContainer).jqmHide();
+                    } else {
+                        sakai.api.Util.notification.show(
+                            $(messageEmailChanged).html(),
+                            $(messageEmailChangedBody).html());
+                    }
+                }
+            );
+        };
+
         /**
          * Initialise form validation
          */
@@ -426,6 +438,13 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
 
             // Initialize the validate plug-in
             sakai.api.Util.Forms.validate($(accountPreferencesPreferencesForm), validatePreferencesOpts);
+
+            var validateEmailOpts = {
+                submitHandler: saveEmail
+            };
+
+            // Initialize the validate plug-in
+            sakai.api.Util.Forms.validate($(accountPreferencesEmailChange), validateEmailOpts);
         };
 
         /**
@@ -485,14 +504,14 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             selectAutoTagging($(this).attr("data-sakai-autotagging") === "true" ? true : false);
             enableElements($(saveRegional));
             e.preventDefault();
-        })
+        });
 
         var hideAllPanes = function(){
             $(passChangeContainer).hide();
             $(preferContainer).hide();
             $(privacyContainer).hide();
             $(emailChangeContainer).hide();
-        }
+        };
 
         $(accountPreferencesPreferencesTab).click(function(){
             $(accountPreferencesTabsButtons).removeClass(tabSelected);

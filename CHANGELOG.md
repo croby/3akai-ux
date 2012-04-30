@@ -1,8 +1,62 @@
 rSmart 3akai-ux Changelog
 =========================
 
+com.rsmart.nakamura.uxloader-wrap-1.1.2-rsmart
+----------------------------------------------
+* ACAD-829 -Psakai-release build is not hashing content files 6026af9
+* ACAD-829 pointed the ant hash_files task at the newly generated hashfiles jar in tools/hashfiles/target instead of at the maven repo b6c9e
+* ACAD-826 Enable sakai.blogwow, sakai.sitestats, and sakai.sections by default in Sakai 2 Tools Widget 1ab47ea
+* [maven-release-plugin] prepare for next development iteration 0092dbe
+
+com.rsmart.nakamura.uxloader-wrap-1.1.2-rsmart
+----------------------------------------------
+* [maven-release-plugin] prepare release com.rsmart.nakamura.uxloader-wrap-1.1.2-rsmart 0091485
+* NOJIRA s/1.3-SS/1.1.2-rsmart-SS eaca343
+* NOJIRA s/1.3-SS/1.1.2-rsmart-SNAPSHOT f91c1be
+* ACAD-702 corrected omission of sakai2calendar in 'one world' fix f19e2cc
+* NOJIRA add new nexus rsmart-dev repo 68ac198
+* NOJIRA rollback to 1.1.2-rsmart-SNAPSHOT release version fc4402c
+* ACAD-783 try to optimize build on a releas 49ef46b
+* NOJIRA change scm url d0d818b
+* [maven-release-plugin] prepare for next development iteration 36dc0c3
+* [maven-release-plugin] prepare release com.rsmart.nakamura.uxloader-wrap-1.1.3-rsmart ae3837f
+* NOJIRA trying to fix scm url for release plugin ac2f7bb
+* [maven-release-plugin] prepare for next development iteration dec7d13
+* [maven-release-plugin] prepare release com.rsmart.nakamura.uxloader-wrap-1.1.2-rsmart 858dda4
+* NOJIRA upgrade maven-release-plugin 2.2.2 43da842
+* ACAD-783 Add support for Maven Release plugin 3f5dabc
+* ACAD-781 Rejigger maven pom versions of build artifacts to reflect that they are SNAPSHOT builds 797d833
+* NOJIRA rev build number for 1.1.2 sprint 6258275
+
+acad-1.1.1
+----------
+* ACAD-678 Added a z-index to the dropdown so it works with the full-width skin 41e932c
+* Merge pull request #1631 from raydavis/SAKIII-4842 e41c1f4
+* Merge pull request #1574 from jsloane/SAKIII-4741 26d45a2
+* ACAD-702 LTI context ID resolver fixes for one world ID 17e97d7
+* ACAD-712 Fix incorrect base authentication configuration - Move skin images to the skins folder 62d308b
+* ACAD-712 Centralize configuration changes to reduce upgrade friction 1046824
+* fixed some problems with the merge ACAD-145 eaf45dc
+* NOJIRA update artifact version number to 1.1.1-SNAPSHOT b85a331
+* ACAD-657 Configure the widget lists(cherry picked from commit f7bfd4229e54e9e75af352afb0f47ce3cc3e4218) b956c23
+* ACAD-659 Remove the help link from the top navigation widget and move it into configuration f046657
+* ACAD-659 Allow links to be placed on the right side of the top navigation f9207d0
+* ACAD-658 Sample config to override the default authentication configuration 6868ed5
+* ACAD-658 Enable the ability to configure an internal and an external login system at the same time 21b3cdf
+* ACAD-663 Configure the email to be located in the account preferences widget instead of in the basic info 27fea00
+* ACAD-663 Allow the email in the basic profile to be displayed and edited in the account preferences widget 4182314
+* ACAD-662 Adding the ability to set a custom set of i18n properties that override all others in the system This can be used for institution
+* ACAD-660 Sample config_custom configuration for the explore page Provided as an example, and is commented out for now 07f7cd8
+* ACAD-660 Enable configuration of the index.html/explore page 801643c
+* ACAD-661 Provide configuration example of how to change the default widget on a user's dashboard ad44663
+* Squashed commit of the following: 5c59ef4
+* ACAD-657 Configure the widget lists f7bfd42
+* ACAD-657 Provide the ability to configure the widget lists 314bf1d
+* ACAD-610 Workaround for an issue in the document-viewer library - https://github.com/documentcloud/document-viewer/issues/8 4127d6a
+* ACAD-600 Make TinyMCE configurable via config js files 41b9446
+
 1.1.0-M1-20120130
--------------------------
+-----------------
 * NOJIRA release/1.1.0-M1-20120130 7599c13
 * ACAD-622 corrected string replace call that was affecting derivation of user ID from <select> element b04d7ca
 

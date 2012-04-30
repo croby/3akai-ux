@@ -36,7 +36,8 @@ define(
         "sakai/sakai.api.l10n",
         "sakai/sakai.api.i18n",
         "sakai/sakai.api.util",
-        "config/config_custom"
+        //"config/config_custom"
+        "config/dynamicconfig"
     ],
     function($, sakai_serv, sakai_l10n, sakai_i18n, sakai_util, sakai_conf) {
 

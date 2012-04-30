@@ -29,7 +29,8 @@
 define(
     [
         "jquery",
-        "config/config_custom"
+        //"config/config_custom"
+        "config/dynamicconfig"
     ],
     function($, sakai_conf) {
 

@@ -36,7 +36,22 @@
         <div class="fl-fix fl-centered accountpreferences">
             <!-- CONTENT -->
             <div class="email" id="accountpreferences_changeEmailContainer" style="display:none;">
-              <!-- will fill in from email-verify -->
+                <form id="accountpreferences_email_change" class="preferences-form">
+                    <h2>__MSG__EMAIL__:</h2>
+                    <div class="accountpreferences_section_wrap_email accountpreferences_section_border">
+                        <div id="accountpreferences_section_email">
+                            <div class="form-item s3d-form-field-wrapper">
+                                <label for="accountpreferences_email">__MSG__EMAIL__:</label>
+                                <input maxlength="255" type="email" id="accountpreferences_email" name="accountpreferences_email" class="email-input required" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="save-preferences">
+                        <button type="button" class="s3d-link-button s3d-bold accountpreferences_cancel">__MSG__CANCEL__</button>
+                        <button type="submit" id="accountpreferences_saveEmail" class="s3d-button s3d-overlay-action-button">__MSG__UPDATE_EMAIL_ADDRESS__</button>
+                        <div class="accountpreferences_general_message" id="accountpreferences_general_message_email"></div>
+                    </div>
+                </form>
             </div>
             <div class="password" id="accountpreferences_changePassContainer" style="display:none;">
                 <form id="accountpreferences_password_change" class="preferences-form">

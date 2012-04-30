@@ -36,7 +36,7 @@ require(["jquery", "sakai/sakai.api.core", "sakai/sakai.api.widgets"], function(
      * @param {String} tuid Unique id of the widget
      * @param {Boolean} showSettings Show the settings of the widget or not
      */
-    sakai_global.sakai2calendar = function(tuid, showSettings){
+    sakai_global.sakai2forums = function(tuid, showSettings){
 
 
         /////////////////////////////
@@ -66,6 +66,9 @@ require(["jquery", "sakai/sakai.api.core", "sakai/sakai.api.widgets"], function(
 
         // Templates
         var $basicltiSettingsPreviewTemplate = $("#basiclti_settings_preview_template", rootel);
+
+        // see: http://www.ietf.org/rfc/rfc2396.txt Appendix B
+        var urlRegExp = new RegExp("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
 
         //////////////////////
         // Render functions //
@@ -143,7 +146,7 @@ require(["jquery", "sakai/sakai.api.core", "sakai/sakai.api.widgets"], function(
                 //sakai.api.Widgets.saveWidgetData(tuid, json, savedDataToJCR);
             };
 
-            json["lti_virtual_tool_id"] = "sakai.schedule";
+            json["lti_virtual_tool_id"] = "sakai.forums";
             json[":operation"] = "basiclti";
             json["sling:resourceType"] = "sakai/basiclti";
 
@@ -166,7 +169,7 @@ require(["jquery", "sakai/sakai.api.core", "sakai/sakai.api.widgets"], function(
                 frame_height: defaultHeight,
                 width: defaultWidth,
                 width_unit: defaultWidthUnit,
-                lti_virtual_tool_id: "sakai.schedule",
+                lti_virtual_tool_id: "sakai.forums",
                 isSakai2Tool: true
             };
             saveRemoteContent();
@@ -198,5 +201,5 @@ require(["jquery", "sakai/sakai.api.core", "sakai/sakai.api.widgets"], function(
         getRemoteContent();
     };
 
-    sakai.api.Widgets.widgetLoader.informOnLoad("sakai2calendar");
+    sakai.api.Widgets.widgetLoader.informOnLoad("sakai2forums");
 });

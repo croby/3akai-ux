@@ -15,7 +15,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-require(["jquery", "sakai/sakai.api.core"], function($, sakai){
+require(["jquery", "sakai/sakai.api.core", "misc/zxcvbn"], function($, sakai){
 
     sakai_global.createnewaccount = function(){
 
@@ -239,6 +239,59 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai){
             sakai.api.Widgets.widgetLoader.insertWidgets("captcha_box", false);
         };
 
+        /**
+         * Uses zxcvbn.js to determine the password strength of the user's
+         * password, and displays a message inline
+         */
+        var checkPasswordStrength = function() {
+            var currentPw = $.trim($('#password').val());
+            if (currentPw) {
+                // Run the zxcvbn test on the currentPw, passing in all
+                // the current input values to use them as data points
+                var strength = zxcvbn(currentPw,
+                    [
+                        $('#username').val(),
+                        $('#firstName').val(),
+                        $('#lastName').val(),
+                        $('#email').val(),
+                        $('#institution').val(),
+                        $('#phone').val()
+                    ]);
+                $('#password_strength').show();
+                var $strength = $('#password_strength .strength');
+                var score = 'zero';
+                var strengthPhrase = 'STRENGTH_WEAK';
+                // Determine the strength phrasing and class
+                switch (strength.score) {
+                    case 1:
+                        score = 'one';
+                        break;
+                    case 2:
+                        strengthPhrase = 'STRENGTH_GOOD';
+                        score = 'two';
+                        break;
+                    case 3:
+                        strengthPhrase = 'STRENGTH_STRONG';
+                        score = 'three';
+                        break;
+                    case 4:
+                        strengthPhrase = 'STRENGTH_VSTRONG';
+                        score = 'four';
+                        break;
+                    default:
+                        break;
+                }
+                // Remove all the classes and add in the new classes and text
+                $strength
+                    .removeClass()
+                    .addClass('strength ' + score)
+                    .text(sakai.api.i18n.getValueForKey(strengthPhrase));
+                $('#password_label').addClass('strength');
+            } else {
+                $('#password_strength').hide();
+                $('#password_label').removeClass('strength');
+            }
+        };
 
         ////////////////////
         // Event Handlers //
@@ -281,6 +334,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai){
 
                 setRoleIsStudent (role == 'Student');
             });
+
+            $('#password').on('keyup', checkPasswordStrength);
 
             /*
              * Once the user is trying to submit the form, we check whether all the fields have valid

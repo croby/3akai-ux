@@ -54,6 +54,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-ui"], function($, sakai) {
 
         var privstructure = false;
         var pubstructure = false;
+        var infinitystructurespulled = [];
         var contextData = false;
 
         var parametersToCarryOver = {};
@@ -180,6 +181,22 @@ require(["jquery", "sakai/sakai.api.core", "jquery-ui"], function($, sakai) {
         };
 
         var getPageContent = function(ref){
+            if ($.inArray(ref, infinitystructurespulled) === -1) {
+                var toplevelref = ref.split("-")[0];
+                $.ajax({
+                    url: "/p/"+toplevelref+".infinity.json",
+                    dataType: "json",
+                    async: false,
+                    success: function(data) {
+                        infinitystructurespulled.push(ref);                        
+                        for (var page in data){
+                            if (page.substring(0,9) !== "structure" && page.substring(0,1) !== "_"){
+                                pubstructure.pages[toplevelref + "-" + page] = data[page];
+                            }
+                        }                        
+                    }
+                })                
+            }
             if (privstructure.pages[ref]) {
                 return privstructure.pages[ref];
             } else if (pubstructure.pages[ref]) {
@@ -305,7 +322,7 @@ require(["jquery", "sakai/sakai.api.core", "jquery-ui"], function($, sakai) {
             var batchRequests = [];
             for (var i = 0; i < pids.length; i++) {
                 batchRequests.push({
-                    "url": "/p/" + pids[i] + ".infinity.json",
+                    "url": "/p/" + pids[i] + ".json",
                     "method": "GET"
                 });
             }

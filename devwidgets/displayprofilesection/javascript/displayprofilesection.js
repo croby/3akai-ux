@@ -316,6 +316,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             userid = sakai_global.profile.main.data.userid;
             editing = userid && userid === sakai.data.me.user.userid;
             getData( renderSection );
+            // add a class to the container to uniquely identify this widget
+            $rootel.find('#displayprofilesection_container').addClass(widgetData.sectionid);
         };
 
         init();

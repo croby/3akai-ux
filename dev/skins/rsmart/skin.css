@@ -26,6 +26,14 @@
   color: #666;
 }
 
+/* ACAD-932 Fix the line-height of the paragraphs inside TinyMCE */
+.sakaidocs_widget #s3d-page-container p,
+.sakaidocs_widget #s3d-page-container p span,
+.mceContentBody p,
+.mceContentBody p span {
+    line-height: 1.2em;
+}
+
 /* overrides for sakai.create_new_account.css */
 label.required {
   background-image: url("/dev/images/required.png");

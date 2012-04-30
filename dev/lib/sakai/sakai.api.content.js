@@ -18,7 +18,8 @@
 define(
     [
         "jquery",
-        "config/config_custom",
+        //"config/config_custom",
+        "config/dynamicconfig",
         "sakai/sakai.api.server",
         "sakai/sakai.api.groups",
         "sakai/sakai.api.util",
@@ -1282,7 +1283,11 @@ define(
 
                                     sakai_groups.addUsersToGroup(groupId, managershipsToProcess, sakai_user.data.me, true, function(){
                                         sakai_groups.addUsersToGroup(groupId, membershipsToProcess, sakai_user.data.me, false, function(){
-
+                                            // Add current user to the managers group for management functions before refresh
+                                            sakai_user.data.me.user.subjects.push(groupId + '-managers');
+                                            sakai_user.data.me.groups.push({
+                                                'sakai:group-id': groupId + '-managers'
+                                            });
                                             // 4g. Remove the creator as an explicit manager of all these groups
                                             batchRequests = [];
                                             var params = {

@@ -26,7 +26,8 @@ define(
         "sakai/sakai.api.user",
         "sakai/sakai.api.util",
         "sakai/sakai.api.widgets",
-        "config/config_custom",
+        //"config/config_custom",
+        "config/dynamicconfig",
         "../../../var/widgets.json?callback=define"
     ],
     function(sakai_comm,
@@ -60,6 +61,7 @@ define(
         data : sakai_user.data,
         widgets : sakai_widget_config
     };
+    sakai.config.SakaiDomain = window.location.protocol + "//" + window.location.host;
     // Load in the world templates
     var templates = sakai_util.getTemplates();
     sakai.config.worldTemplates = templates;

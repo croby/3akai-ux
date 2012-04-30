@@ -189,7 +189,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         /**
          * Save the remotecontent to the jcr
          */
-        var saveRemoteContent = function(){
+        var saveRemoteContent = function(e) {
+            e.preventDefault();
             if (json.url !== "") {
                 sakai.api.Widgets.saveWidgetData(tuid, json, savedDataToJCR);
             } else {
@@ -330,7 +331,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             $(remotecontentSettingsInsert).click(saveRemoteContent);
 
             // Cancel it
-            $(remotecontentSettingsCancel).click(function(){
+            $(remotecontentSettingsCancel).click(function(e) {
+                e.preventDefault();
                 sakai.api.Widgets.Container.informCancel(tuid, "ggadget");
             });
 

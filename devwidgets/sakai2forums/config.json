@@ -1,0 +1,22 @@
+{
+    "sakaidocs":true,
+    "ca":true,
+    "hasSettings": false,
+    "id":"sakai2forums",
+    "i18n": {
+        "default": {
+            "bundle": "/devwidgets/sakai2forums/bundles/default.properties",
+            "name": "Forum",
+            "description": "Forum"
+        }
+    },
+    "img":"/devwidgets/sakai2forums/images/sakai2forums.png",
+    "type":"sakai",
+    "enabled":true,
+    "url":"/devwidgets/sakai2forums/sakai2forums.html",
+    "userpages": true,
+    "userdashboard": true,
+    "grouppages": true,
+    "groupdashboard": true,
+    "showinsakaigoodies":true
+}

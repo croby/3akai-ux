@@ -105,14 +105,16 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             selectMessages($inbox_select_checkbox.is(":checked"));
         });
 
-        $(".inbox_items_container input[type='checkbox']").live("change", function() {
+        var handleGlobalButtons = function() {
             if ($(".inbox_items_container input[type='checkbox']:checked").length > 0) {
                 toggleGlobalButtons(true);
             } else {
                 toggleGlobalButtons(false);
             }
-        });
-
+        }        
+        
+        $(".inbox_items_container input[type='checkbox']").live("change", handleGlobalButtons);
+        
         /** Sending messages **/
         var sendMessageFinished = function() {
             $.bbq.removeState("newmessage");
@@ -271,8 +273,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 });
             }, {}, function(items, total){
                 $(".inbox_select_all_container:visible input").removeAttr("disabled");
-                $("#inbox_delete_selected").removeAttr("disabled");
-                $("#inbox_mark_as_read").removeAttr("disabled");
+                handleGlobalButtons();
                 return sakai.api.Util.TemplateRenderer($inbox_message_list_item_template, {
                     sakai: sakai,
                      _: _,
@@ -281,8 +282,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 });
             }, function(){
                 $(".inbox_select_all_container:visible input").attr("disabled", true);
-                $("#inbox_delete_selected").attr("disabled", true);
-                $("#inbox_mark_as_read").attr("disabled", true);
+                handleGlobalButtons();
                 $inbox_message_list.html(sakai.api.Util.TemplateRenderer($inbox_message_list_item_empty_template, {
                     "widgetData": widgetData,
                     "search": searchTerm
@@ -502,6 +502,9 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             handleHashChange(null, {}, {}, all, {}, true);
             $(window).bind("hashchanged.inbox.sakai", handleHashChange);
             $(window).bind(tuid + ".shown.sakai", handleShown);
+            // Add the title key as class to the #inbox_widget div to uniquely
+            // identify this instance of the widget
+            $rootel.find('#inbox_widget').addClass(sakai.api.i18n.General.process(widgetData.title, "noop").toLowerCase());
         };
 
         init();

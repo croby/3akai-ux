@@ -30,7 +30,8 @@
 define(
     [
         "jquery",
-        "config/config_custom",
+        //"config/config_custom",
+        "config/dynamicconfig",
         "sakai/sakai.api.server"
     ],
     function($, sakai_config, sakai_serv) {

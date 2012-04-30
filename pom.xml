@@ -15,42 +15,59 @@
   <groupId>com.rsmart.nakamura</groupId>
   <artifactId>com.rsmart.nakamura.uxloader-wrap</artifactId>
   <packaging>pom</packaging>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.1.5-rsmart-SNAPSHOT</version>
   <name>Sakai 3 UX Loader Wrapper</name>
   <description>Loads the Sakai 3 UI into the JCR</description>
-  <url>http://github.com/sakaiproject/3akai-ux</url>
+  <url>http://github.com/rSmart/3akai-ux</url>
   <scm>
-    <connection>scm:git:git://github.com/sakaiproject/3akai-ux.git</connection>
-    <developerConnection>scm:git:git@github.com:sakaiproject/3akai-ux.git</developerConnection>
-    <url>http://github.com/sakaiproject/3akai-ux/</url>
+    <connection>scm:git:git://github.com/rSmart/3akai-ux.git</connection>
+    <developerConnection>scm:git:git@github.com:rSmart/3akai-ux.git</developerConnection>
+    <url>http://github.com/rSmart/3akai-ux/</url>
   </scm>
   <issueManagement>
     <system>jira</system>
-    <url>http://jira.sakaiproject.org/jira/browse/SAKIII</url>
+    <url>http://jira.rsmart.com/jira/browse/ACAD</url>
   </issueManagement>
   <distributionManagement>
         <downloadUrl>http://source.sakaiproject.org/maven2/</downloadUrl>
         <snapshotRepository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>sakai-maven-snapshots-scp</id>
-            <name>Sakai snapshot Repo</name>
-            <url>scp://source.sakaiproject.org/var/www/html/maven2-snapshots</url>
-            <layout>default</layout>
+           <uniqueVersion>false</uniqueVersion>
+           <id>rsmart.snapshot.repo</id>
+           <name>rsmart snapshot repository</name>
+           <url>s3://rsmart-dev/artifacts/maven/snapshot</url>
+           <layout>default</layout>
         </snapshotRepository>
         <repository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>sakai-maven2-scp</id>
-            <name>Sakai maven2 repository</name>
-            <url>scp://source.sakaiproject.org/var/www/html/maven2</url>
-            <layout>default</layout>
+          <uniqueVersion>false</uniqueVersion>
+          <id>rsmart.release.repo</id>
+          <name>rsmart release repository</name>
+          <url>s3://rsmart-dev/artifacts/maven/release</url>
+          <layout>default</layout>
         </repository>
+        <!--
         <site>
             <id>sakai-site</id>
             <name>Sakai release Site</name>
             <url>scp://source.sakaiproject.org/var/www/html/release/nakamura/${project.version}</url>
         </site>
+        -->
   </distributionManagement>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <wagon.s3.version>1.1.10</wagon.s3.version>
+  </properties>
   <repositories>
+        <repository>
+          <id>rsmart-dev</id>
+          <name>rsmart-dev</name>
+          <url>https://nexus.rsmart.com/nexus/content/groups/public/</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
         <repository>
             <id>sakai-maven2</id>
             <name>Sakai Maven Repository</name>
@@ -118,11 +135,23 @@
     <module>tools/hashfiles</module>
   </modules>
   <build>
+    <extensions>
+      <extension>
+        <groupId>org.kuali.maven.wagons</groupId>
+        <artifactId>maven-s3-wagon</artifactId>
+        <version>${wagon.s3.version}</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.2.1</version>
+        <version>2.2.2</version>
+        <configuration>
+          <useReleaseProfile>false</useReleaseProfile>
+          <goals>deploy</goals>
+          <arguments>-Psakai-release</arguments>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>

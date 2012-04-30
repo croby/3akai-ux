@@ -15,13 +15,13 @@
     <parent>
       <groupId>com.rsmart.nakamura</groupId>
       <artifactId>com.rsmart.nakamura.uxloader-wrap</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>1.1.5-rsmart-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>org.sakaiproject.nakamura.hashfiles</artifactId>
     <packaging>jar</packaging>
-    <version>1.1</version>
+    <version>1.1.5-rsmart-SNAPSHOT</version>
     <name>Sakai 3 UX File Hasher</name>
     <description>Hashes files and appends the hash to the name to trigger proper caching</description>
     <build>
@@ -49,6 +49,13 @@
                 <mainClass>org.sakaiproject.ux.tools.HashRefreshFiles</mainClass>
               </manifest>
             </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+          <configuration>
+            <skip>false</skip>
           </configuration>
         </plugin>
       </plugins>
