@@ -523,7 +523,7 @@ require(["jquery", "sakai/sakai.api.core", "underscore"], function($, sakai, _) 
             $(window).bind(tuid + ".shown.sakai", handleShown);
             // Add the title key as class to the #inbox_widget div to uniquely
             // identify this instance of the widget
-            $rootel.find('#inbox_widget').addClass(sakai.api.i18n.General.process(widgetData.title, "noop").toLowerCase());
+            $rootel.find('#inbox_widget').addClass(sakai.api.i18n.General.process(widgetData.title).toLowerCase());
         };
 
         init();
