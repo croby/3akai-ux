@@ -458,15 +458,9 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         
         var processWidgetData = function(success, data, callback){
             if (success) {
-
+                wData = data;
                 firstLoad = false;
                 newItems = [];
-                if (!(data.items instanceof Array)) {
-                    sakai.api.Server.convertObjectToArray(data.items, data, "items");
-                }
-
-                wData = data;
-
                 // get the item profile data
                 for (var i = 0, j = data.items.length; i < j; i++) {
                     if (processWidget(data.items[i], data.items)) {

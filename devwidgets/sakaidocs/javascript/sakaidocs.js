@@ -478,6 +478,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                     theme_advanced_statusbar_location: "none",
                     handle_node_change_callback: selectWidgetInEditor,
 
+                    paste_preprocess: paste_preprocess,
                     // Example content CSS (should be your site CSS)
                     content_css: sakai.config.URL.TINY_MCE_CONTENT_CSS,
 
@@ -599,6 +600,13 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                     "video[src|class|autoplay|controls|height|width|preload|loop]"
                 });
             }
+        };
+
+        var paste_preprocess = function(pl, o) {
+            var $content = $('<div>' + o.content + '</div>');
+            // Remove any base64-encoded images that have been pasted
+            $content.find('img[src^="data:image"]').remove();
+            o.content = $content.html();
         };
 
         ///////////////////////////////////

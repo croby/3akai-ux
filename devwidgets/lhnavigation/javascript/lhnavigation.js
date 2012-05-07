@@ -188,14 +188,15 @@ require(["jquery", "sakai/sakai.api.core", "jquery-ui"], function($, sakai) {
                     dataType: "json",
                     async: false,
                     success: function(data) {
-                        infinitystructurespulled.push(ref);                        
+                        infinitystructurespulled.push(ref);
+                        data = sakai.api.Server.convertObjectToArray(data, null, null);
                         for (var page in data){
                             if (page.substring(0,9) !== "structure" && page.substring(0,1) !== "_"){
                                 pubstructure.pages[toplevelref + "-" + page] = data[page];
                             }
-                        }                        
+                        }
                     }
-                })                
+                });
             }
             if (privstructure.pages[ref]) {
                 return privstructure.pages[ref];
