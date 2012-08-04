@@ -1,0 +1,17 @@
+/* Overrides for footer.css */
+#footer_logo {
+  background-image: url('/dev/skins/rsmart/images/footer_logo_upenn.png') !important;
+  width: 97px !important;
+  height: 35px !important;
+}
+
+/* Overrides for institutionalskinning.css */
+.institutionalskinning_widget #institutionalskinning_logo {
+  background-image: url('/dev/skins/rsmart/images/header_logo_upenn.png') !important;
+}
+
+.institutionalskinning_widget #institutionalskinning_logo {
+  background: url("/dev/skins/rsmart/images/header_logo_upenn.png") no-repeat scroll left center #E9E9E9 !important;
+  height:84px !important;
+}
+
