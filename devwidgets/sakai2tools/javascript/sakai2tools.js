@@ -86,6 +86,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         var $basicltiSettingsColorContainerTemplate = $("#basiclti_settings_color_container_template", rootel);
         var $basicltiSettingsTemplate = $("#basiclti_settings_template", rootel);
         var $basicltiSettingsPreviewTemplate = $("#basiclti_settings_preview_template", rootel);
+        var $basicltiPlaceholderTemplate = $('#basiclti_placholder_template', rootel);
 
         // see: http://www.ietf.org/rfc/rfc2396.txt Appendix B
         var urlRegExp = new RegExp("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
@@ -483,8 +484,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
         }
 
         var displayPlaceholder = function() {
-            $(basicltiMainContainer).html("Edit the page to change the Sakai CLE tool settings.");
-        }
+            sakai.api.Util.TemplateRenderer($basicltiPlaceholderTemplate, {}, $(basicltiMainContainer, rootel));
+        };
 
         /**
          * Will fetch the URL and other parameters from the JCR and according to which
