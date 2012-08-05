@@ -12,9 +12,8 @@
     },
     "id": "accountpreferences",
     "trigger": {
-        "selectors": [".accountpreferences_trigger"],
-        "onLoad": false
+        "onLoad": true
     },
-    "type": "core", 
+    "type": "core",
     "url": "/devwidgets/accountpreferences/accountpreferences.html"
 }
