@@ -11,10 +11,10 @@
         {if showDefaultContent}
             <img src="/devwidgets/embedcontent/images/defaultcontent.png"/>
         {else}
-            {if embedmethod === "original"}
-                {var embedClass="embedcontent_large_content embedcontent_overflowy"}
-            {else}
+            {if embedmethod === "thumbnail"}
                 {var embedClass="embedcontent_thumbnail_content embedcontent_overflowy"}
+            {else}
+                {var embedClass="embedcontent_large_content embedcontent_overflowy"}
             {/if}
             {if title || description}
                 <div class="s3d-highlight_area_background embedcontent_grey_background">
@@ -34,7 +34,7 @@
                         <div id="widget_collectionviewer_${item.placement}" class="widget_inline"></div>
                     {else}
                         {var canShare = sakai.api.Content.canCurrentUserShareContent(item.fullresult)}
-                        <div class="${embedClass} ${layout} {if embedmethod === 'thumbnail'} s3d-draggable-container {/if}" data-canshare="${canShare}" data-scope="content" data-entityid="${item.fullresult._path}" {if sakai.api.Content.Collections.isCollection(item.fullresult)} data-collection="true" {/if}>
+                        <div class="${embedClass} ${layout} {if embedmethod === 'thumbnail'} s3d-draggable-container {/if}" data-canshare="${canShare}" data-scope="content" data-entityid="${item.fullresult._path}" {if sakai.api.Content.Collections.isCollection(item.fullresult)} data-collection="true" {/if} {if embedmethod === 'fixed'} style="width:${width}" {/if}>
                             {var mimeType = sakai.api.Content.getMimeType(item.fullresult)}
                             {var mimeTypeDescription = sakai.api.i18n.getValueForKey(sakai.api.Content.getMimeTypeData(mimeType).description)}
                             {var thumbnail = sakai.api.Content.getThumbnail(item.fullresult)}
@@ -151,6 +151,22 @@
                                     <div class="embedcontent_option">
                                         <input type="radio" name="style" value="thumbnail" id="thumbnail"/>
                                         <label for="thumbnail">__MSG__THUMBNAIL__</label>
+                                    </div>
+                                </div>
+                                <div class="s3d-highlight_area_background" id="embedcontent_sized_example">
+                                    <div class="embedcontent_thumbnail_content clearfix">
+                                        <img src="/devwidgets/embedcontent/images/Surfer-Medium.jpg" alt="__MSG__FIXED_WIDTH_IMAGE__" width/>
+                                        <div class="embedcontent_details">
+                                            <span><a href="#" class="s3d-action embedcontent_include_name" style="display:none">__MSG__NAME_OF_CONTENT__</a></span>
+                                            <span class="embedcontent_include_details" style="display:none">__MSG__EXTRA_DETAILS__</span>
+                                            <span><a href="#" class="s3d-action embedcontent_include_download" style="display:none">__MSG__DOWNLOAD__</a></span>
+                                        </div>
+                                    </div>
+                                    <div class="embedcontent_option">
+                                        <label for="width">__MSG__WIDTH__:</label>
+                                        <input type="text" name="width" value="400px" id="width"/>
+                                        <input type="radio" name="style" value="fixed" id="fixed"/>
+                                        <label for="fixed">__MSG__FIXED__</label>
                                     </div>
                                 </div>
                             </div>

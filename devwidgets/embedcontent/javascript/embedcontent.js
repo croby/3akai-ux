@@ -334,6 +334,8 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
                 $('.embedcontent_option #thumbnail', $rootel).click();
             } else if (options.embedmethod === 'original') {
                 $('.embedcontent_option #original_size', $rootel).click();
+            } else if (options.embedmethod === 'fixed') {
+                $('.embedcontent_option #fixed', $rootel).click();
             }
             if (options.layout === 'vertical') {
                 $('#embedcontent_layout_vertical', $rootel).click();
@@ -424,6 +426,7 @@ require(["jquery", "sakai/sakai.api.core"], function($, sakai) {
             var objectData = {
                 "layout": selectedItems.length > 1 ? formVals.layout : "single",
                 "embedmethod": formVals.style,
+                "width": formVals.style === 'fixed' ? formVals.width : '',
                 "title": formVals.title || '',
                 "description": formVals.description || '',
                 "items": itemsToSave,
