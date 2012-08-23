@@ -1,6 +1,61 @@
 rSmart 3akai-ux Changelog
 =========================
 
+com.rsmart.nakamura.uxloader-wrap-1.3.1-rsmart
+----------------------------------------------
+* [maven-release-plugin] prepare release com.rsmart.nakamura.uxloader-wrap-1.3.1-rsmart baece32
+* Merge pull request #116 from croby/ACAD-1202-develop 50af36e
+* Merge pull request #112 from croby/ACAD-1062-2 54b616c
+* ACAD-1193 Add a new Wimba widget 6c23d5a
+* Merge pull request #110 from croby/ACAD-1167 70d93a9
+* Merge pull request #108 from xolotl/ACAD-1190 447efd0
+* Merge pull request #107 from xolotl/ACAD-1189 bf4d8ac
+* Merge pull request #105 from croby/ACAD-1163 5ed5ecd
+* ACAD-1167 remove the sakai2tools widget from the add area widget page list. 83a3a4e
+* [maven-release-plugin] prepare for next development iteration 33f778a
+
+com.rsmart.nakamura.uxloader-wrap-1.3.0-rsmart
+----------------------------------------------
+* [maven-release-plugin] prepare release com.rsmart.nakamura.uxloader-wrap-1.3.0-rsmart 090e686
+* Merge pull request #104 from croby/ACAD-1062 4c9bd0f
+* Merge pull request #103 from croby/ACAD-1166 4e27d31
+* Merge pull request #102 from croby/ACAD-1147 29499ed
+* Merge pull request #101 from croby/ACAD-1147 8d27e48
+* NOJIRA eval the dynamic-config text in the success function. b96ca0c
+* ACAD-279 Fix reverted Guest Login text. 95a0f7d
+* Merge pull request #100 from rSmart/ACAD-1136 58d3bf4
+* ACAD-1137 Fix world template picker screen text. 3a0bcfb
+* KERN-2948 Reg form treats HTTP 409 as if the user already exists. db9623d
+* ACAD-1122 Fix password strength indicator colors. 81e8b90
+* Merge pull request #99 from croby/fluid_width_fixes 69aa772
+* ACAD-1073 Fix SNAPSHOT versions. 44fbba7
+* ACAD-1092 Add class="portletMainIframe" to the iframe that contains BasicLTI content 5e54564
+* Merge pull request #98 from croby/ACAD-1079 4592e49
+* Add SNAPSHOT to the pom-bundle.xml 20975cc
+* Add the SNAPSHOT qualifier to the version. 6177db7
+* Merge pull request #97 from croby/ACAD-451 c50a990
+* Merge pull request #96 from croby/rsmart-1.3.0 215be2b
+* Merge pull request #95 from croby/ACAD-945-color a88b5ba
+* Merge pull request #94 from croby/ACAD-1041 268595c
+* Merge pull request #93 from croby/ACAD-1051 4918410
+* Merge pull request #91 from croby/ACAD-1016 fa5298f
+* Merge pull request #90 from croby/ACAD-1044 7b41627
+* Merge pull request #89 from croby/ACAD-1043 5a3729e
+* run optimizer step with node if it's on the path d932d5e
+* Merge pull request #88 from croby/ACAD-574-2 c4c8d19
+* NOJIRA update CHANGELOG for 1.1.3-1.1.4 f72eace
+* Conflicts: 	devwidgets/lhnavigation/javascript/lhnavigation.js 	devwidgets/sakaidocs/javascript/sakaidocs.js a237170
+* Merge pull request #87 from croby/ACAD-1002 142b4ec
+* Merge pull request #85 from croby/ACAD-994 68c4854
+* Merge pull request #84 from croby/ACAD-941 ec6e1ae
+* Merge pull request #83 from croby/ACAD-738 ebd74b8
+* Merge pull request #82 from croby/ACAD-655 ee13809
+* Merge pull request #81 from croby/ACAD-296 1705e74
+* Merge pull request #80 from croby/ACAD-574 6c28850
+* ACAD-945 Implement password strength calculus and display for the registration page(cherry picked from commit 44607a6561b92fca4491834570c0769fde0fb8e9) 8a3ac69
+* ACAD-945 Don't hash the zxcvbn.js file f9e19d1
+* Merge pull request #79 from croby/ACAD-830 b056b12
+
 com.rsmart.nakamura.uxloader-wrap-1.1.4-rsmart
 ----------------------------------------------
 * [maven-release-plugin] prepare release com.rsmart.nakamura.uxloader-wrap-1.1.4-rsmart 95c86be

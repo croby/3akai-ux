@@ -1,0 +1,22 @@
+{
+    "sakaidocs":true,
+    "ca":true,
+    "hasSettings": false,
+    "id":"wimbalti",
+    "i18n": {
+        "default": {
+            "bundle": "/devwidgets/wimbalti/bundles/default.properties",
+            "name": "Wimba",
+            "description": "Wimba"
+        }
+    },
+    "img":"/devwidgets/wimbalti/images/wimbalti.png",
+    "type":"sakai",
+    "enabled":true,
+    "url":"/devwidgets/wimbalti/wimbalti.html",
+    "userpages": true,
+    "userdashboard": true,
+    "grouppages": true,
+    "groupdashboard": true,
+    "showinsakaigoodies":true
+}
