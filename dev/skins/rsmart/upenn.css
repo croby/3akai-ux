@@ -1,17 +1,54 @@
 /* Overrides for footer.css */
 #footer_logo {
   background-image: url('/dev/skins/rsmart/images/footer_logo_upenn.png') !important;
+  margin-right: 15px;
   width: 97px !important;
   height: 35px !important;
 }
 
 /* Overrides for institutionalskinning.css */
 .institutionalskinning_widget #institutionalskinning_logo {
-  background-image: url('/dev/skins/rsmart/images/header_logo_upenn.png') !important;
+  background: url("/dev/skins/rsmart/images/header_logo_upenn.png") no-repeat scroll left center #ededed !important;
+  height:85px !important;
+}
+.institutionalskinning_widget {border-top: solid 8px #fff !important;}
+#explore_navigation {
+    box-shadow: none !important;
+}
+.categories_widget {
+    background-image: none !important;
+	background-color: #fff !important;
+	border-top: solid 2px #fff;
 }
 
-.institutionalskinning_widget #institutionalskinning_logo {
-  background: url("/dev/skins/rsmart/images/header_logo_upenn.png") no-repeat scroll left center #E9E9E9 !important;
-  height:84px !important;
-}
+div.fl-container-flex div.fl-fix p {margin-top: -6px;}
+#footer_links {margin-top: 3px;}  
 
+/*link colors*/
+a, a:visited {color: 15158c;}
+.footer_main .fixed-container a {color: #666;}
+.s3d-dropdown-list ul li button, .s3d-dropdown-list ul li a {color:#15158c;}
+.s3d-widget-container .fl-widget-titlebar .settings:hover {color:#15158c;}
+.s3d-dropdown-menu ul li a {color:#15158c;}
+a.s3d-regular-links,.s3d-regular-links a, button.s3d-regular-links, .s3d-regular-links button{color:#2683bc;}
+a.s3d-widget-links,.s3d-widget-links a, button.s3d-widget-links, .s3d-widget-links button{color:##15158c;}
+button.s3d-button:focus {box-shadow:0 0 2px 1px #15158c;}
+s3d-link-button {margin:0;padding:0;background: none repeat scroll 0 0 transparent;border: medium none;color:#15158c;}
+.s3d-button.s3d-large-button {color:#15158c;}
+.s3d-button.s3d-overlay-button {color:#15158c;}
+a.s3d-action,.s3d-actions a{color:#15158c;}
+a.s3d-regular-links, .s3d-regular-links a, button.s3d-regular-links, .s3d-regular-links button {color:#15158c;}
+/*hover color*/
+a:hover, a:visited:hover {color: c60;}
+.footer_main .fixed-container a:hover {color: #c60;}
+.s3d-dropdown-list ul li button:hover, .s3d-dropdown-list ul li a:hover {color:#c60;}
+.s3d-widget-container .fl-widget-titlebar .settings:hover {color:#c60;}
+.s3d-dropdown-menu ul li a:hover {color:#c60;}
+a.s3d-regular-links:hover,.s3d-regular-links a:hover, button.s3d-regular-links:hover, .s3d-regular-links button:hover{color:#2683bc;}
+a.s3d-widget-links:hover,.s3d-widget-links a:hover, button.s3d-widget-links:hover, .s3d-widget-links button:hover{color:##c60;}
+s3d-link-button:hover {color:#c60;}
+.s3d-button.s3d-large-button:hover {color:#c60;}
+.s3d-button.s3d-overlay-button:hover {color:#c60;}
+a.s3d-action:hover,.s3d-actions a:hover{color:#c60;}
+a.s3d-regular-links:hover, .s3d-regular-links a:hover, button.s3d-regular-links:hover, .s3d-regular-links button:hover {color:#c60;}
+/*end link colors*/
