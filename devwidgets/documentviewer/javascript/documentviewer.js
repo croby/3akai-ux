@@ -222,7 +222,7 @@ require(["jquery", "sakai/sakai.api.core", "/devwidgets/documentviewer/lib/docum
             if (!url){
                 url = "/devwidgets/video/jwplayer/player.swf";
             }
-            var so = new SWFObject(url,'ply', '100%', params.height || '100%','9','#000000');
+            var so = new SWFObject(url,'ply', '100%', params.height || '560','9','#000000');
             so.addParam('allowfullscreen','true');
             if (params.allowscriptaccess) {
                 so.addParam('allowscriptaccess', params.allowscriptaccess);
@@ -247,7 +247,7 @@ require(["jquery", "sakai/sakai.api.core", "/devwidgets/documentviewer/lib/docum
 
             if (sakai.api.Content.isKalturaPlayerSupported(mimeType)) {
                 renderKalturaPlayer(data);
-            } else if (sakai.api.Content.isJwPlayerSupportedVideo(mimeType)){            
+            } else if (sakai.api.Content.isJwPlayerSupportedVideo(mimeType)){
                 renderVideoPlayer(getPath(data));
             } else if (sakai.api.Content.isJwPlayerSupportedAudio(mimeType)) {
                 renderAudioPlayer(data);
