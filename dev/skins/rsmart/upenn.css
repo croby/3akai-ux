@@ -21,8 +21,13 @@
 	border-top: solid 2px #fff;
 }
 
-div.fl-container-flex div.fl-fix p {margin-top: -6px;}
-#footer_links {margin-top: 3px;}  
+#footer_links {margin-top: 3px;}
+.footer_main .fixed-container {
+  padding-top: 10px !important;
+}
+.footer_main .fixed-container #footer_links_right {
+  margin-top: 6px;
+}
 
 /*link colors*/
 a, a:visited {color: 15158c;}
