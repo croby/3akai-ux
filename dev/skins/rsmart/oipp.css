@@ -76,29 +76,62 @@
 /* ACAD-1219: Revert 1.3 header style changes for html content */
 #group_sakaidoc_container #htmlblock_view_container h1,
 #content_profile_main_container #htmlblock_view_container h1,
-#group_sakaidoc_container #htmlblock_view_container h2,
-#content_profile_main_container #htmlblock_view_container h2,
-#group_sakaidoc_container #htmlblock_view_container h3,
-#content_profile_main_container #htmlblock_view_container h3 {
-  color: black;
-  text-transform: none;
-}
-
-#group_sakaidoc_container #htmlblock_view_container h1,
-#content_profile_main_container #htmlblock_view_container h1 {
+.show .sakaiSkin .mce_h1 span.mceText,
+#tinymce h1,
+.pagetitle_widget h1,
+#pagetitle_edit_container {
   font-size: 2em;
   font-family: Arial,Helvetica,sans-serif;
   font-weight: bolder;
   line-height: normal;
-  margin: 5px 0px 10px 0;
+  color: black;
+  text-transform: none;
 }
 
 #group_sakaidoc_container #htmlblock_view_container h2,
-#content_profile_main_container #htmlblock_view_container h2 {
-  font-size: 123.1%;
+#content_profile_main_container #htmlblock_view_container h2,
+.show .sakaiSkin .mce_h2 span.mceText,
+#tinymce h2 {
+  font-size: 16px;
+  color: black;
+  text-transform: none;
+  font-weight: bold;
 }
 
 #group_sakaidoc_container #htmlblock_view_container h3,
-#content_profile_main_container #htmlblock_view_container h3 {
-  font-size: 108%;
+#content_profile_main_container #htmlblock_view_container h3,
+.show .sakaiSkin .mce_h3 span.mceText,
+#tinymce h3 {
+  font-size: 14px;
+  color: black;
+  text-transform: none;
+  font-weight: bold;
+}
+
+#group_sakaidoc_container #htmlblock_view_container h4,
+#content_profile_main_container #htmlblock_view_container h4,
+.show .sakaiSkin .mce_h4 span.mceText,
+#tinymce h4 {
+  font-size: 13px;
+  color: black;
+  text-transform: none;
+  font-weight: bold;
+}
+
+#group_sakaidoc_container #htmlblock_view_container h5,
+#content_profile_main_container #htmlblock_view_container h5,
+.show .sakaiSkin .mce_h5 span.mceText,
+#tinymce h5 {
+  font-size: 10.79px;
+  color: black;
+  font-weight: bold;
+}
+
+#group_sakaidoc_container #htmlblock_view_container h6,
+#content_profile_main_container #htmlblock_view_container h6,
+.show .sakaiSkin .mce_h6 span.mceText,
+#tinymce h6 {
+  font-size: 8.71px;
+  color: black;
+  font-weight: bold;
 }

@@ -33,6 +33,7 @@ define(function(){
             USER_DEFAULT_ICON_URL_LARGE: "/dev/images/default_User_icon_100x100.png",
             INFINITE_LOADING_ICON: "/dev/images/Infinite_Scrolling_Loader_v01.gif",
             I18N_CUSTOM_BUNDLE: '/dev/configuration/custom.properties',
+            TINY_MCE_CONTENT_CSS: '/dev/css/sakai/main.css,/dev/css/sakai/sakai.corev1.css,/dev/css/sakai/sakai.editor.css',
 
             // Services
             BATCH: "/system/batch",
@@ -185,7 +186,7 @@ define(function(){
                 },
                 "defaultaccess": "public", // public, logged-in-only or members-only (see above for role description)
                 "defaultjoin": "yes", // no, yes, or withauth (see above for descriptions)
-                "addcontentmanagers": true // true, false. If set to yes, group managers will be added as manager for a file 
+                "addcontentmanagers": true // true, false. If set to yes, group managers will be added as manager for a file
                                            // added to a group library in context of that group
             },
             Content: {
@@ -1545,9 +1546,9 @@ define(function(){
         // Array of css files to load in each page
         skinCSS: [],
 
-        Languages: [{ 
-            "country": "ES", 
-            "language": "es", 
+        Languages: [{
+            "country": "ES",
+            "language": "es",
             "displayName": "Español"
         }, {
             "country": "CN",
