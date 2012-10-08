@@ -31,7 +31,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
      * @param {String} tuid Unique id of the widget
      * @param {Boolean} showSettings Show the settings of the widget or not
      */
-    sakai_global.lhnavigation = function (tuid, showSettings) {
+    sakai_global.lhnavigation = function(tuid, showSettings) {
 
         ///////////////////
         // CONFIGURATION //
@@ -47,9 +47,6 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         var navSelectedItemArrow = '.lhnavigation_selected_item_arrow';
         var navSelectedItem = '.lhnavigation_selected_item';
 
-        var $lhnavigation_contentauthoring_declaration = $('#lhnavigation_contentauthoring_declaration'),
-            $lhnavigation_contentauthoring_declaration_template = $('#lhnavigation_contentauthoring_declaration_template');
-
         ////////////////
         // DATA CACHE //
         ////////////////
@@ -62,8 +59,6 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         var parametersToCarryOver = {};
         var sakaiDocsInStructure = {};
         var currentPageShown = {};
-
-        var doNotRenderSakaiDocsOnPaths = ['/content'];
 
 
         //////////////////////////////
@@ -146,7 +141,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
 
         var storeStructure = function(structure, savepath) {
             sakai.api.Server.saveJSON(savepath, {
-                'structure0': $.toJSON(structure)
+                'structure0': JSON.stringify(structure)
             });
         };
 
@@ -208,6 +203,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 if (toplevelref && subpageref) {
                     $.ajax({
                         url: '/p/' + toplevelref + '/' + subpageref + '.infinity.json',
+                        cache: false,
                         dataType: 'json',
                         success: function(data) {
                             infinityStructuresPulled.push(ref);
@@ -268,7 +264,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             structure.items = {};
             structure.pages = {};
             if (data['structure0']) {
-                if (typeof data['structure0'] === 'string') {
+                if (_.isString(data['structure0'])) {
                     structure.items = $.parseJSON(data['structure0']);
                 } else {
                     structure.items = data['structure0'];
@@ -299,7 +295,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 if (level && level.substring(0, 1) !== '_') {
                     refs = collectPoolIds(structure[level], refs);
                 } else if (level && level === '_pid' && structure['_canView'] !== false) {
-                    if ($.inArray(structure[level], refs) == -1) {
+                    if ($.inArray(structure[level], refs) === -1) {
                         refs.push(structure[level]);
                     }
                 }
@@ -311,7 +307,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             for (var level in structure0) {
                 if (structure0[level]._pid && structure0[level]._pid === pid) {
                     var docStructure = docInfo.structure0;
-                    if (typeof docStructure === 'string') {
+                    if (_.isString(docStructure)) {
                         docStructure = $.parseJSON(docStructure);
                     }
                     structure0[level] = $.extend(true, structure0[level], docStructure);
@@ -343,7 +339,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         var addDocUrlIntoStructure = function(structure, url) {
             structure._poolpath = url;
             for (var i in structure) {
-                if (structure.hasOwnProperty(i) && i.substring(0,1) !== '_' && typeof structure[i] !== 'string') {
+                if (structure.hasOwnProperty(i) && i.substring(0,1) !== '_' && ! _.isString(structure[i])) {
                     structure[i] = addDocUrlIntoStructure(structure[i], url);
                 }
             }
@@ -521,6 +517,33 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             return structureFoundIn;
         };
 
+        /**
+         * Check if a user can view the specific page.
+         * If the page has no _canView property than the user can view the page.
+         *
+         * @param {Object} structure The structure containing the page
+         * @param {String} selected The path to the page, ie. 'syllabus/week1'
+         */
+        var canViewPage = function(structure, selected) {
+            if (structure) {
+                var pageSelected = selected;
+                var subPage = false;
+
+                // Check if this is a subpage
+                if (selected.indexOf('/') !== -1) {
+                    pageSelected = selected.split('/')[0];
+                    subPage = selected.split('/')[1];
+                }
+
+                // Check if the page has a _canView property and it's set to false, if it is undefined the user should still be able to see the page
+                if ((structure.items[pageSelected] && structure.items[pageSelected]._canView === false) ||
+                    (subPage && structure.items[pageSelected][subPage] && structure.items[pageSelected][subPage]._canView === false)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
         var selectPage = function(newPageMode) {
             if (contextData.forceOpenPage) {
                 $.bbq.pushState({
@@ -531,10 +554,10 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 var state = $.bbq.getState('l');
                 var selected = state || false;
                 var structureFoundIn = false;
-                // Check whether this page exist
+                // Check whether this page exist and if we have permission to view
                 if (selected) {
                     structureFoundIn = checkPageExists(privstructure, selected) || checkPageExists(pubstructure, selected);
-                    if (!structureFoundIn) {
+                    if (!structureFoundIn || !canViewPage(structureFoundIn, selected)) {
                         selected = false;
                     }
                 }
@@ -568,7 +591,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                         }
 
                         getPageContent(ref, function() {
-                            preparePageRender(ref, selected, savePath, pageSavePath, nonEditable, canEdit, newPageMode);
+                            preparePageRender(ref, selected, savePath, pageSavePath, nonEditable, canEdit, newPageMode === true);
                         });
                     }
                 } else {
@@ -610,7 +633,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                     content: currentPageShown.content
                 };
                 editPageTitle();
-                $(window).on('click', '#inserterbar_action_add_page', addNewPage);
+                $(document).on('click', '#inserterbar_action_add_page', addNewPage);
             } else {
                 $(window).trigger('showpage.contentauthoring.sakai', [currentPageShown]);
             }
@@ -655,7 +678,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             }
         };
 
-        var showContextMenu = function($clickedItem){
+        var showContextMenu = function($clickedItem) {
             var contextMenu = $('#lhnavigation_submenu');
             $clickedItem.children('.lhnavigation_selected_submenu_image').addClass('clicked');
             var leftOffset = 68;
@@ -687,7 +710,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
 
         var showAreaPermissions = function() {
             toggleContextMenu(true);
-            $(window).trigger('permissions.area.trigger', [contextMenuHover]);
+            $(document).trigger('init.areapermissions.sakai', [contextMenuHover]);
         };
 
         //////////////////////
@@ -696,7 +719,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
 
         var showUserPermissions = function() {
             toggleContextMenu(true);
-            $(window).trigger('permissions.area.trigger', [contextMenuHover]);
+            $(document).trigger('init.userpermissions.sakai', [contextMenuHover]);
         };
 
         //////////////////////////////////
@@ -736,12 +759,13 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         };
 
         var addNewPage = function() {
-            $(window).off('click', '#inserterbar_action_add_page', addNewPage);
+            $(document).off('click', '#inserterbar_action_add_page', addNewPage);
             if (contextData.addArea) {
                 addSubPage();
             } else {
                 addTopPage();
             }
+            return false;
         };
 
         var addTopPage = function() {
@@ -749,7 +773,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 if (success) {
                     var newpageid = sakai.api.Util.generateWidgetId();
                     var neworder = pubstructure.orderedItems.length;
-        
+
                     var pageContent = {
                         'rows': [{
                             'id': 'id' + Math.round(Math.random() * 100000000),
@@ -777,15 +801,15 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                         },
                         '_childCount':1
                     };
-        
+
                     pubstructure.pages[newpageid] = pageContent;
                     sakaiDocsInStructure[contextData.puburl][newpageid] = pageContent;
-        
+
                     pubstructure.items[newpageid] = pageToCreate;
                     pubstructure.items._childCount++;
                     sakaiDocsInStructure[currentPageShown.savePath].structure0[newpageid] = pageToCreate;
                     sakaiDocsInStructure[currentPageShown.savePath].orderedItems = orderItems(sakaiDocsInStructure[currentPageShown.savePath].structure0);
-        
+
                     renderData();
                     addParametersToNavigation();
                     $(window).trigger('sakai.contentauthoring.needsTwoColumns');
@@ -808,10 +832,10 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 if (success) {
                     var newpageid = sakai.api.Util.generateWidgetId();
                     var neworder = sakaiDocsInStructure[currentPageShown.pageSavePath].orderedItems.length;
-        
+
                     var fullRef = currentPageShown.pageSavePath.split('/p/')[1] + '-' + newpageid;
                     var basePath = currentPageShown.path.split('/')[0];
-        
+
                     var pageContent = {
                         'rows': [{
                             'id': sakai.api.Util.generateWidgetId(),
@@ -857,13 +881,13 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                         },
                         '_childCount':1
                     };
-        
+
                     pubstructure.pages[fullRef] = pageContent;
                     sakaiDocsInStructure[currentPageShown.pageSavePath][newpageid] = pageContent;
-        
+
                     pubstructure.items[basePath][newpageid] = pageToCreate;
                     pubstructure.items[basePath]._childCount++;
-        
+
                     sakaiDocsInStructure[currentPageShown.pageSavePath].structure0[newpageid] = pageToCreate1;
                     sakaiDocsInStructure[currentPageShown.pageSavePath].orderedItems = orderItems(sakaiDocsInStructure[currentPageShown.pageSavePath].structure0);
 
@@ -905,7 +929,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             var inputArea = $('.lhnavigation_change_title', menuitem);
             inputArea.show();
             inputArea.val($.trim(pageTitle.text()));
-            
+
             pageTitle.hide();
 
             // Hide the dropdown menu
@@ -1144,8 +1168,8 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         ////////////////////////////
 
         var handleReorder = function(e, ui) {
-            var $target = $(e.target);
-            var savePath = $target.parents('.lhnavigation_menuitem:first').data('sakai-savepath');
+            var $target = $(ui.item);
+            var savePath = $target.data('sakai-savepath');
             var structure = sakaiDocsInStructure[savePath];
             var $list = $target.parents('ul div.lhnavigation_menu_list');
             if ($target.parents('ul.lhnavigation_subnav').length) {
@@ -1182,12 +1206,12 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             $('#lhnavigation_container .lhnavigation_menu_list').sortable({
                 items: 'li.lhnavigation_outer[data-sakai-manage=true]',
                 update: handleReorder,
-                distance: 30
+                distance: 1
             });
             $('#lhnavigation_container .lhnavigation_subnav').sortable({
                 items: 'li.lhnavigation_subnav_item[data-sakai-manage=true]',
                 update: handleReorder,
-                distance: 30
+                distance: 1
             });
             $('.lhnavigation_menuitem[data-sakai-manage=true]').addClass('lhnavigation_move_cursor');
         };
@@ -1205,7 +1229,11 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 processData(pubdata, cData.puburl, function(processedPub) {
                     pubstructure = processedPub;
                     renderData();
-                    selectPage();
+                    if (sakai_global.contentauthoring && sakai_global.contentauthoring.ready) {
+                        selectPage();
+                    } else {
+                        $(window).on('ready.contentauthoring.sakai', selectPage);
+                    }
                     enableSorting();
                     if (cData.parametersToCarryOver) {
                         parametersToCarryOver = cData.parametersToCarryOver;
@@ -1227,26 +1255,6 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         // Initializing the Sakaidocs widget //
         ///////////////////////////////////////
 
-        var sakaiDocsInitialized = false;
-
-        var prepareRenderNavigation = function(pubdata, privdata, cData, mainPubUrl, mainPrivUrl) {
-            if (!sakaiDocsInitialized) {
-                sakaiDocsInitialized = true;
-                $('#s3d-page-main-content').append($('#lhnavigation_contentauthoring_declaration'));
-                $(window).bind('ready.contentauthoring.sakai', function() {
-                    renderNavigation(pubdata, privdata, cData, mainPubUrl, mainPrivUrl);
-                });
-                // Don't render sakaidocs on paths in the doNotRenderSakaiDocsOnPaths array
-                // so we don't double-render it on those that already include it
-                if ($.inArray(window.location.path, doNotRenderSakaiDocsOnPaths) === -1) {
-                    sakai.api.Util.TemplateRenderer($lhnavigation_contentauthoring_declaration_template, {}, $lhnavigation_contentauthoring_declaration);
-                }
-                sakai.api.Widgets.widgetLoader.insertWidgets('s3d-page-main-content', false);
-            } else {
-                renderNavigation(pubdata, privdata, cData, mainPubUrl, mainPrivUrl);
-            }
-        };
-
         sakai_global.lhnavigation.getCurrentPage = function() {
             return currentPageShown;
         };
@@ -1255,7 +1263,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         // Internal event binding //
         ////////////////////////////
 
-        $('.lhnavigation_selected_submenu').live('click', function(ev) {
+        $rootel.on('click', '.lhnavigation_selected_submenu', function(ev) {
             showContextMenu($(this));
         });
 
@@ -1263,18 +1271,18 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             onContextMenuHover($(this), $(this).parent('li'));
         });
 
-        $(window).on('click', '#inserterbar_action_add_page', addNewPage);
+        $(document).on('click', '#inserterbar_action_add_page', addNewPage);
 
-        $('#lhavigation_submenu_edittitle').live('click', function(ev) {
+        $rootel.on('click', '#lhavigation_submenu_edittitle', function(ev) {
             editPageTitle();
             ev.stopPropagation();
         });
 
-        $('#lhnavigation_submenu_permissions').live('click', function(ev) {
+        $rootel.on('click', '#lhnavigation_submenu_permissions', function(ev) {
             showAreaPermissions();
         });
 
-        $('#lhnavigation_submenu_user_permissions').live('click', function(ev) {
+        $rootel.on('click', '#lhnavigation_submenu_user_permissions', function(ev) {
             showUserPermissions();
         });
 
@@ -1284,32 +1292,32 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             }
         });
 
-        $('.lhnavigation_change_title').live('blur', function(ev) {
+        $('.lhnavigation_change_title').on('blur', function(ev) {
             if (changingPageTitle) {
                 savePageTitle();
             }
         });
 
-        $('#lhavigation_submenu_deletepage').live('click', function(ev) {
+        $rootel.on('click', '#lhavigation_submenu_deletepage', function(ev) {
             confirmPageDelete();
         });
 
-        $('#lhnavigation_delete_confirm').live('click', function(ev) {
+        $(document).on('click', '#lhnavigation_delete_confirm', function(ev) {
             deletePage();
         });
 
-        $('.lhnavigation_item_content, .lhnavigation_subnav_item_content').live('mouseleave', function() {
+        $('.lhnavigation_item_content, .lhnavigation_subnav_item_content').on('mouseleave', function() {
             onContextMenuLeave();
         });
 
-        $('.lhnavigation_item_content').live('click', function(ev) {
+        $rootel.on('click', '.lhnavigation_item_content', function(ev) {
             processNavigationClick($(this), ev);
         });
 
         // bind arrow keys for navigation
-        $('.lhnavigation_menuitem a').live('keydown', function(ev) {
+        $('.lhnavigation_menuitem a').on('keydown', function(ev) {
             var $el = $(this);
-            if (ev.which == $.ui.keyCode.DOWN) {
+            if (ev.which === $.ui.keyCode.DOWN) {
                 // check top level
                 if ($el.hasClass('lhnavigation_toplevel')) {
                     // check if sub menu open
@@ -1347,7 +1355,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                         return false;
                     }
                 }
-            } else if (ev.which == $.ui.keyCode.UP) {
+            } else if (ev.which === $.ui.keyCode.UP) {
                 // check top level
                 if ($el.hasClass('lhnavigation_toplevel')) {
                     // check if previous menu has an open sub menu open
@@ -1386,12 +1394,12 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                         return false;
                     }
                 }
-            } else if (ev.which == $.ui.keyCode.RIGHT &&
+            } else if (ev.which === $.ui.keyCode.RIGHT &&
                     $el.prev('div').hasClass('lhnavigation_has_subnav') &&
                     !$el.prev('div').hasClass('lhnavigation_has_subnav_opened')) {
                 // open sub menu
                 $el.click();
-            } else if (ev.which == $.ui.keyCode.LEFT &&
+            } else if (ev.which === $.ui.keyCode.LEFT &&
                     $el.prev('div').hasClass('lhnavigation_has_subnav_opened')) {
                 // close sub menu
                 $el.click();
@@ -1402,7 +1410,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         // External event binding //
         ////////////////////////////
 
-        $(window).bind('lhnav.addHashParam', function(ev, params) {
+        $(window).on('lhnav.addHashParam', function(ev, params) {
             storeNavigationParameters(params);
         });
         var handleHashChange = function(e, changed, deleted, all, currentState, first) {
@@ -1410,21 +1418,22 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 selectPage(all && all.newPageMode && all.newPageMode === 'true');
             }
         };
-        $(window).bind('hashchanged.lhnavigation.sakai', handleHashChange);
+        $(window).on('hashchanged.lhnavigation.sakai', handleHashChange);
 
-        $(window).bind('lhnav.init', function(e, pubdata, privdata, cData, mainPubUrl, mainPrivUrl) {
-            prepareRenderNavigation(pubdata, privdata, cData, mainPubUrl, mainPrivUrl);
+        $(window).on('lhnav.init', function(e, pubdata, privdata, cData, mainPubUrl, mainPrivUrl) {
+            renderNavigation(pubdata, privdata, cData, mainPubUrl, mainPrivUrl);
         });
 
-        $(window).bind('lhnav.updateCount', function(e, pageid, value, add) {
+        $(window).on('lhnav.updateCount', function(e, pageid, value, add) {
             updateCounts(pageid, value, add);
         });
 
         $(window).unload(function() {
-            if($.bbq.getState('newPageMode')) {
+            if ($.bbq.getState('newPageMode')) {
                 $.bbq.removeState('newPageMode');
             }
         });
+
 
         ///////////////////////
         // Widget has loaded //

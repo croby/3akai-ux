@@ -16,7 +16,7 @@
             {if isSakai2Tool === true}
                 <label for="basiclti_settings_lti_virtual_tool_id">Tool:</label>
                 <select id="basiclti_settings_lti_virtual_tool_id" name="lti_virtual_tool_id">
-                {for sakai2Tool in toolList} 
+                {for sakai2Tool in toolList}
                     <option value="${sakai2Tool.toolid}">${sakai2Tool.toolname}</option>
                 {/for}
                 </select>
@@ -105,6 +105,11 @@
     <a title="__MSG__GREEN__" id="basiclti_settings_color_008000" class="basiclti_settings_color {if border_color == "008000"} basiclti_settings_color_selected{/if}">&nbsp;</a>
     <a title="__MSG__BLUE__" id="basiclti_settings_color_0000ff" class="basiclti_settings_color {if border_color == "0000ff"} basiclti_settings_color_selected{/if}">&nbsp;</a>
     <br class="fl-push" />
+--></div>
+
+<!-- Template which points people to the settings of the widget -->
+<div class="sakai2tools_notification_template"><!--
+    <p class="s3d-bold">__MSG__PLEASE_CHANGE_THE_SETTINGS_OF_THE_SAKAI2_TOOLS_WIDGET__</p>
 --></div>
 
 <!-- MAIN CONTAINER -->

@@ -26,7 +26,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
      * @param {String} tuid Unique id of the widget
      * @param {Boolean} showSettings Show the settings of the widget or not
      */
-    sakai_global.contentauthoring = function (tuid, showSettings, widgetData) {
+    sakai_global.contentauthoring = function(tuid, showSettings, widgetData) {
 
         // Element cache
         var $rootel = $('#' + tuid);
@@ -95,7 +95,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
 
         /*
          * Generate a drag helper that will be used to drag around when dragging a row or
-         * a widget (instead of the actual element). Using a drag helper prevents 
+         * a widget (instead of the actual element). Using a drag helper prevents
          */
         var generateDragHelper = function(ev, ui) {
             var $el = $('<div/>');
@@ -284,7 +284,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         };
 
         /**
-         * Matches the number of columns to the 'columncount' data attribute on list items 
+         * Matches the number of columns to the 'columncount' data attribute on list items
          * that indicates how many are used and puts a black check icon in front of the list item
          * @param {jQuery} element jQuery object with classname 'contentauthoring_row_container'
          *                         that is the parent element of all columns
@@ -359,7 +359,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             for (var i = 0; i < $cells.length; i++) {
                 // We give the last column the remaining width
                 if (i === $cells.length - 1) {
-                    widths.push(lastWidth); 
+                    widths.push(lastWidth);
                 // We give each column a relative width rather than
                 // an absolute one
                 } else {
@@ -414,7 +414,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             var totalRowWidth = $('#contentauthoring_widget_container', $pageRootEl).width();
             var newColumnWidth = (ui.size.width + 12) / totalRowWidth;
             var oldColumnWidth = ui.originalSize.width / totalRowWidth;
-            
+
             var rowId = $row.attr('data-row-id');
             var $cells = $('.contentauthoring_cell', $row);
 
@@ -646,7 +646,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 }
             });
         };
-        
+
 
         ///////////////////////
         ///////////////////////
@@ -705,8 +705,8 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             isDragging = false;
             $('.contentauthoring_dummy_element', $(this)).remove();
             // If we've dragged in a piece of content
-            if ($(ui.item).data('contentId') || $(ui.item).data('collectionId')) {
-                addExistingElement(event, ui);  
+            if ($(ui.item).attr('data-contentId') || $(ui.item).attr('data-collectionId')) {
+                addExistingElement(event, ui);
             // If we've dragged in a widget
             } else if ($(ui.item).hasClass('inserterbar_widget_draggable')) {
                 addNewWidget(event, $(ui.item));
@@ -874,6 +874,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             $('#contentauthoring_widget_settings').jqmHide();
             // Remove the widget from the settings overlay
             $('#contentauthoring_widget_content').html('');
+            storeCurrentPageLayout();
         };
 
         /**
@@ -986,7 +987,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                     $pageRootEl.remove();
                 }
                 // Create the new element
-                $pageRootEl = $('<div />').attr('id', currentPageShown.ref);
+                $pageRootEl = $('<div />').attr('id', currentPageShown.ref).attr('data-sakai-container-id', currentPageShown.path);
                 // Add element to the DOM
                 $('#contentauthoring_widget', $rootel).append($pageRootEl);
                 convertRows(currentPageShown.content.rows);
@@ -1005,7 +1006,12 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             determineEmptyPage(currentPageShown);
 
             // Shwow the edit page bar if I have edit permissions on this page
+            if (canEditCurrentPage() && !currentPageShown.isVersionHistory) {
+                $('#contentauthoring_inserterbar_container', $rootel).html(sakai.api.Util.TemplateRenderer('contentauthoring_inserterbar_template', {}));
+                sakai.api.Widgets.widgetLoader.insertWidgets('contentauthoring_inserterbar_container', false);
+            }
             $('#contentauthoring_inserterbar_container', $rootel).toggle(canEditCurrentPage());
+
             //SAKIII-5248
             $(window).trigger('position.inserter.sakai');
             updateColumnHeights();
@@ -1102,6 +1108,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                     addEditButtonBinding();
                 }
             });
+            return false;
         };
 
         //////////////////////
@@ -1352,7 +1359,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                         'url': oldStorePath,
                         'method': 'POST',
                         'parameters': {
-                            'version': $.toJSON(data)
+                            'version': JSON.stringify(data)
                         }
                     });
                     batchRequests.push({
@@ -1373,7 +1380,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                         'url': currentPageShown.pageSavePath,
                         'method': 'POST',
                         'parameters': {
-                            'sakai:forceupdate': true
+                            'sakai:forceupdate': Math.random()
                         }
                     });
                     sakai.api.Server.batch(batchRequests, function() {
@@ -1569,7 +1576,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         });
 
         // Revision history
-        $(window).on('click', '#inserterbar_action_revision_history', function() {
+        $(document).on('click', '#inserterbar_action_revision_history', function() {
             $(window).trigger('init.versions.sakai', currentPageShown);
         });
 
@@ -1684,11 +1691,9 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
         // Load the widgets inside of the content authoring widget (inserterbar, etc.)
         sakai.api.Widgets.widgetLoader.insertWidgets('s3d-page-main-content');
 
-        // Notify the lefthand navigation widget that this widget has been fully loaded,
-        // so it can send over its first page to load
+        // Set the contentauthoring ready variable to let the left hand navigation know it can render pages
+        sakai_global.contentauthoring.ready = true;
         $(window).trigger('ready.contentauthoring.sakai');
-
-
 
 
 
@@ -1698,7 +1703,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
 
         ////////////////////////////
         ////////////////////////////
-        // EXTERNAL DRAG AND DROP // 
+        // EXTERNAL DRAG AND DROP //
         ////////////////////////////
         ////////////////////////////
 
@@ -1734,7 +1739,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
             }
             return false;
         });
-        
+
         //////////////////////////
         // Add existing element //
         //////////////////////////
@@ -1748,7 +1753,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 'layout':'single',
                 'embedmethod':'original',
                 'items': {
-                    '__array__0__':'/p/' + ($(ui.item).data('contentId') || $(ui.item).data('collectionId'))
+                    '__array__0__':'/p/' + ($(ui.item).attr('data-contentId') || $(ui.item).attr('data-collectionId'))
                 },
                 'title': '',
                 'description': '',
@@ -1878,7 +1883,7 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                     formData.append('file', file);
                     formData.append('_charset_', 'utf-8');
                     xhReq.send(formData);
-                    if (xhReq.status == 201) {
+                    if (xhReq.status === 201) {
                         filesUploaded.push($.parseJSON(xhReq.responseText)[file.name].item);
                         checkAllExternalFilesUploaded(filesUploaded, $el);
                     } else {
@@ -1999,20 +2004,18 @@ require(['jquery', 'underscore', 'sakai/sakai.api.core', 'jquery-ui'], function(
                 }
                 sakai.api.Util.progressIndicator.showProgressIndicator(
                     sakai.api.i18n.getValueForKey('INSERTING_YOUR_EXTERNAL_CONTENT', 'contentauthoring'),
-                    sakai.api.i18n.getValueForKey('PROCESSING'));
+                    sakai.api.i18n.getValueForKey('PROCESSING_UPLOAD'));
                 contentType = 'file';
                 content = dt.files;
                 uploadExternalFiles(content, $el);
             } else if (validURL) {
                 sakai.api.Util.progressIndicator.showProgressIndicator(
                     sakai.api.i18n.getValueForKey('INSERTING_YOUR_EXTERNAL_CONTENT', 'contentauthoring'),
-                    sakai.api.i18n.getValueForKey('PROCESSING'));
+                    sakai.api.i18n.getValueForKey('PROCESSING_UPLOAD'));
                 content = text;
                 uploadExternalLink(content, $el);
             }
         };
-
-
     };
 
     // inform Sakai OAE that this widget has loaded and is ready to run

@@ -1,17 +1,20 @@
 {
-    "id":"accountpreferences",
-    "personalportal":true,
+    "enabled": true,
     "i18n": {
         "default": {
             "bundle": "/devwidgets/accountpreferences/bundles/default.properties",
-            "description":"Account preferences",
-            "name":"Account preferences"
+            "description": "Account preferences",
+            "name": "Account preferences"
         },
-        "es_ES": { 
+        "es_ES": {
             "bundle": "/devwidgets/accountpreferences/bundles/es_ES.properties"
-        } 
+        }
     },
-    "type":"core",
-    "enabled":true,
-    "url":"/devwidgets/accountpreferences/accountpreferences.html"
+    "id": "accountpreferences",
+    "trigger": {
+        "selectors": [".accountpreferences_trigger"],
+        "onLoad": false
+    },
+    "type": "core",
+    "url": "/devwidgets/accountpreferences/accountpreferences.html"
 }

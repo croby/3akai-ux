@@ -3,17 +3,16 @@
     <head>
 
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <!-- Sakai 3 R&amp;D - Sakai 2 site -->
+
         <title></title>
 
         <!-- Sakai Core CSS -->
         <link rel="stylesheet" type="text/css" href="/dev/css/sakai/main.css" />
-        <link rel="stylesheet" type="text/css" href="/dev/css/sakai/sakai.corev1.css" />
 
 
         <!-- Sakai Page CSS -->
         <link rel="stylesheet" type="text/css" href="/dev/s23/css/s23_site.css" />
- 
+
 
         <!-- to support sakai2 legacy frame resizing -->
         <script type="text/javascript" src="/library/js/headscripts.js"></script>
@@ -76,7 +75,7 @@
                     {elseif col_index == 1}
                         <div class="col2of2">
                     {else}
-                        <div> 
+                        <div>
                     {/if}
                     {for tool in col}
                         <div class="s23_site_iframe_title">
@@ -85,7 +84,7 @@
                         <iframe name="Main${tool.xid}" id="Main${tool.xid}" class="s23_site_iframe" scrolling="auto" width="100%" frameborder="0" title="${tool.title}"></iframe>
                     {/for}
                         </div>
-                {/for} 
+                {/for}
             </div>
         --></div>
 

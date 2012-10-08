@@ -51,7 +51,7 @@ define(
             // Get the browser language preference - IE uses userLanguage, all other browsers user language
             var locale = navigator.language ? navigator.language : navigator.userLanguage;
             if (locale) {
-                var split = locale.split("-");
+                var split = locale.split('-');
                 if (split.length > 1) {
                     split[1] = split[1].toUpperCase();
                     var langs = sakai_conf.Languages;
@@ -60,7 +60,7 @@ define(
                     var i;
                     for (i=0,j=langs.length; i<j; i++) {
                         if (langs[i].language === split[0] && langs[i].country === split[1]) {
-                            ret = split[0] + "_" + split[1];
+                            ret = split[0] + '_' + split[1];
                             break;
                         }
                     }
@@ -80,7 +80,7 @@ define(
          * @param {Object} dateString    date to parse in the format 2010-10-06T14:45:54+01:00
          * @param {Object} meData the data from sakai.api.User.data.me
          */
-        parseDateString : function(dateString, meData){
+        parseDateString : function(dateString, meData) {
             var d = new Date();
             d.setFullYear(parseInt(dateString.substring(0,4),10));
             d.setMonth(parseInt(dateString.substring(5,7),10) - 1);
@@ -89,7 +89,7 @@ define(
             d.setMinutes(parseInt(dateString.substring(14,16),10));
             d.setSeconds(parseInt(dateString.substring(17,19),10));
             // Localization
-            if (!isNaN((parseInt(dateString.substring(19,22),10)))){
+            if (!isNaN((parseInt(dateString.substring(19,22),10)))) {
                 d.setTime(d.getTime() - (parseInt(dateString.substring(19,22),10)*60*60*1000));
             }
             if (meData && meData.user.locale) {
@@ -97,8 +97,8 @@ define(
             }
             return d;
         },
-        
-        parseDateLong : function(dateLong, meData){
+
+        parseDateLong : function(dateLong, meData) {
             var d = new Date(dateLong);
             return d;
         },
@@ -109,7 +109,7 @@ define(
          * @param {Object} dateString    date epoch
          * @param {Object} meData the data from sakai.api.User.data.me
          */
-        fromEpoch : function(dateString, meData){
+        fromEpoch : function(dateString, meData) {
             var d = new Date(parseInt(dateString,10));
             var UTCDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()));
             if (meData && meData.user.locale) {
@@ -130,7 +130,7 @@ define(
          *  date string
          * @return {String} Localized formatted date string
          */
-        transformDate : function(date){
+        transformDate : function(date) {
             return Globalize.format(date, 'd');
         },
 
@@ -142,7 +142,7 @@ define(
          *  time string
          * @return {String} Localized formatted time string
          */
-        transformTime : function(date){
+        transformTime : function(date) {
             return Globalize.format(date, 't');
         },
 
@@ -154,7 +154,7 @@ define(
          *  date and time string
          * @return {String} Localized fomatted date and time string
          */
-        transformDateTime : function(date){
+        transformDateTime : function(date) {
             return Globalize.format(date, 'F');
         },
 
@@ -165,7 +165,7 @@ define(
          * @return {String} localized string
          */
         transformDateTimeLong : function(date) {
-            return Globalize.format(date, "D");
+            return Globalize.format(date, 'D');
         },
 
         /**
@@ -175,7 +175,7 @@ define(
          * @return {String} localized string
          */
         transformDateTimeShort : function(date) {
-            return Globalize.format(date, "d") + " " + Globalize.format(date, "t");
+            return Globalize.format(date, 'd') + ' ' + Globalize.format(date, 't');
         },
 
         /**
@@ -185,7 +185,7 @@ define(
          * @return {Number} the number formatted
          */
         transformDecimal : function(num, decimalplaces) {
-            return Globalize.format(num, "n" + decimalplaces);
+            return Globalize.format(num, 'n' + decimalplaces);
         },
 
         /**
@@ -202,7 +202,7 @@ define(
          *  Date object, that will have transformed the given date and time into
          *  GMT date and time
          */
-        toGMT : function(date, meData){
+        toGMT : function(date, meData) {
             date.setHours(date.getHours() - meData.user.locale.timezone.GMT);
             return date;
         },
@@ -220,7 +220,7 @@ define(
          *  Date object, that will have transformed the given GMT date and time into
          *  a local date and time
          */
-        fromGMT : function(date, meData){
+        fromGMT : function(date, meData) {
             date.setHours(date.getHours() + meData.user.locale.timezone.GMT);
             return date;
         },
@@ -232,24 +232,24 @@ define(
          * @param {Number} number
          * Number we want to localise (eg 10000000.442)
          * @return {String}
-         * Localised string of the number given to this function (eg "10.000.000,442")
+         * Localised string of the number given to this function(eg '10.000.000,442')
          */
-        transformNumber : function(number){
-            return Globalize.format(number, "n");
+        transformNumber : function(number) {
+            return Globalize.format(number, 'n');
         },
 
         getDateFormatString : function() {
-            var pattern = Globalize.cultures[require("sakai/sakai.api.i18n").data.culture].calendar.patterns.d;
-            var split = pattern.split("/");
+            var pattern = Globalize.cultures[require('sakai/sakai.api.i18n').data.culture].calendar.patterns.d;
+            var split = pattern.split('/');
             var i;
             for (i=0, j=split.length; i<j; i++) {
-                if (split[i] === "m" || split[i] === "M") {
-                    split[i] = "mm";
-                } else if (split[i] === "d" || split[i] === "D") {
-                    split[i] = "dd";
+                if (split[i] === 'm' || split[i] === 'M') {
+                    split[i] = 'mm';
+                } else if (split[i] === 'd' || split[i] === 'D') {
+                    split[i] = 'dd';
                 }
             }
-            return split.join("/").toUpperCase();
+            return split.join('/').toUpperCase();
         }
     };
 });

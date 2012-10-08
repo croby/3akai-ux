@@ -17,7 +17,7 @@
  */
 
 // load the master sakai object to access all Sakai OAE API methods
-require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
+require(['jquery', 'sakai/sakai.api.core', 'jquery-fileupload'], function($, sakai) {
 
     /**
      * @name sakai_global.inserter
@@ -32,7 +32,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
      * @param {String} tuid Unique id of the widget
      * @param {Boolean} showSettings Show the settings of the widget or not
      */
-    sakai_global.inserter = function (tuid, showSettings) {
+    sakai_global.inserter = function(tuid, showSettings) {
 
 
         /////////////////////////////
@@ -197,7 +197,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
          * @param {Object} results Results fetched by the infinite scroller
          * @param {Function} callback callback executed in the infinite scroller
          */
-        var handleLibraryItems = function (results, callback) {
+        var handleLibraryItems = function(results, callback) {
             sakai.api.Content.prepareContentForRender(results, sakai.data.me, function(contentResults) {
                 $.each(sakai.data.me.groups, function(index, group) {
                     $.each(contentResults, function(i, item) {
@@ -254,7 +254,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
                 $.each(sakai.data.me.groups, function(index, group) {
                     if (group['sakai:category'] === 'collection' && group.groupid === 'c-' + collectionId) {
                         // Display the collection counts in the UI
-                        updateCollectionCount(false, collectionId, group.counts.contentCount += amount);
+                        updateCollectionCount(false, collectionId, group.counts.contentCount);
                         // Update the header of a collection if necessary
                         if (inCollection) {
                             $('#inserter_header_itemcount > #inserter_header_itemcount_count', $rootel).text(
@@ -284,7 +284,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
             sakai.api.Content.Collections.createCollection(title, '', permissions, [], contentToAdd, [], function(success, path) {
                 sakai.api.Server.loadJSON('/p/' + path + '.json', function(success, collection) {
                     if (success) {
-                        $(window).trigger('done.newaddcontent.sakai', [[collection], 'user']);
+                        $(document).trigger('done.newaddcontent.sakai', [[collection], 'user']);
                     }
                 });
                 contentToAdd = [];
@@ -365,7 +365,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
                                 contentListDisplayed._path = collectionId;
                             }
                         });
-                        showCollection(contentListDisplayed);
+                        infinityContentScroll.prependItems(itemsDropped);
                     } else {
                         showUIElements('reset');
                     }
@@ -391,7 +391,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
                 });
             });
             if (inCollection) {
-                showCollection(contentListDisplayed);
+                infinityContentScroll.prependItems(itemsDropped);
             }
             sakai.api.Util.progressIndicator.hideProgressIndicator();
         };
@@ -486,17 +486,17 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
                         sakai.api.Content.Collections.addToCollection(collectionId, itemIDs, function() {
                             addToCollectionCount(collectionId, itemsDropped.length, false);
                             if (inCollection) {
-                                showCollection(contentListDisplayed);
+                                infinityContentScroll.prependItems(itemsDropped);
                             }
-                            $(window).trigger('done.newaddcontent.sakai', [itemsDropped, 'user']);
+                            $(document).trigger('done.newaddcontent.sakai', [itemsDropped, 'user']);
                             sakai.api.Util.progressIndicator.hideProgressIndicator();
                         });
                     } else {
                         addToCollectionCount(collectionId, itemsDropped.length, false);
                         if (inCollection) {
-                            showCollection(contentListDisplayed);
+                            infinityContentScroll.prependItems(itemsDropped);
                         }
-                        $(window).trigger('done.newaddcontent.sakai', [itemsDropped, 'user']);
+                        $(document).trigger('done.newaddcontent.sakai', [itemsDropped, 'user']);
                         sakai.api.Util.progressIndicator.hideProgressIndicator();
                     }
                 });
@@ -540,7 +540,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
                     itemsDropped.push(result[data.files[0].name]);
                     if (itemsDropped.length && itemsDropped.length === numberOfItemsDropped) {
                         var collectionId = $dropTarget.attr('data-collection-id');
-                        setDataOnDropped(collectionId, 'public', itemsDropped);
+                        setDataOnDropped(collectionId, sakai.config.Permissions.Content.defaultaccess, itemsDropped);
                         numberOfItemsDropped = 0;
                         itemsDropped = [];
                     }
@@ -606,7 +606,7 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
          */
         var showCollection = function(item) {
             inCollection = true;
-            var query = $.trim($(inserterCollectionContentSearch, $rootel).val()) || '*';
+            var query = $.trim($(inserterCollectionContentSearch, $rootel).val());
             var mimetype = $inserterMimetypeFilter.val() || '';
 
             var params = {
@@ -691,7 +691,9 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
          */
         var openAddNewCollection = function(ev, data) {
             focusCreateNew = true;
-            contentToAdd = data;
+            if (data && data.type !== 'click') {
+                contentToAdd = data;
+            }
             if (!$inserterWidget.is(':visible')) {
                 toggleInserter();
             } else {
@@ -723,22 +725,25 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
          */
         var addBinding = function() {
             $('#subnavigation_add_collection_link').on('click', openAddNewCollection);
-            $(window).on('create.collections.sakai', openAddNewCollection);
-            $(window).on('done.deletecontent.sakai', removeFromLibraryCount);
-            $(window).on('done.newaddcontent.sakai', function() {
+            $(document).on('create.collections.sakai', openAddNewCollection);
+            $(document).on('done.deletecontent.sakai', removeFromLibraryCount);
+            $(document).on('done.newaddcontent.sakai', function(ev, data, collectionToAddTo) {
                 addToCollectionCount('library', 0, false);
+                if (inCollection && 'c-' + contentListDisplayed === collectionToAddTo) {
+                    infinityContentScroll.prependItems(data);
+                }
             });
-            $(window).on('sakai.mylibrary.deletedCollections', function(ev, data) {
+            $(document).on('sakai.mylibrary.deletedCollections', function(ev, data) {
                 if (infinityCollectionScroll) {
                     infinityCollectionScroll.removeItems(data.items);
                 }
             });
-            $(window).on('start.drag.sakai', function() {
+            $(document).on('start.drag.sakai', function() {
                 if (!$inserterWidget.is(':visible')) {
                     toggleInserter();
                 }
             });
-            $(window).on('click', inserterToggle, toggleInserter);
+            $(document).on('click', inserterToggle, toggleInserter);
             $inserterCollectionInfiniteScrollContainer.on('click', 'li', collectionClicked);
             $inserterCollectionContentContainer.on('click', inserterAllCollectionsButton, refreshWidget);
             $inserterCollectionContentContainer.on('submit', inserterCollectionContentSearchForm, searchCollection);
@@ -799,15 +804,22 @@ require(['jquery', 'sakai/sakai.api.core'], function($, sakai) {
                 }
             });
             renderHeader('init');
-            sakai.api.Util.TemplateRenderer('inserter_init_prescroll_template', {
-                sakai: sakai
-            }, $inserterCollectionInfiniteScrollContainer);
-            $inserterCollectionInfiniteScrollContainerList = $($inserterCollectionInfiniteScrollContainerList, $rootel);
-            validateNewCollectionForm();
-            fetchLibrary();
-            if (focusCreateNew) {
-                $(inserterCreateCollectionInput).focus();
-            }
+            // SAKIII-6013 Update the me feed before opening up Collection Viewer.
+            sakai.api.User.loadMeData(function(success, data) {
+                if (success) {
+                    sakai.api.Util.TemplateRenderer('inserter_init_prescroll_template', {
+                        sakai: sakai
+                    }, $inserterCollectionInfiniteScrollContainer);
+                    $inserterCollectionInfiniteScrollContainerList = $($inserterCollectionInfiniteScrollContainerList, $rootel);
+                    validateNewCollectionForm();
+                    fetchLibrary();
+                    if (focusCreateNew) {
+                        $(inserterCreateCollectionInput).focus();
+                    }
+                } else {
+                    debug.error('Error in updating me data before opening Collection Viewer.');
+                }
+            });
         };
 
         addBinding();
